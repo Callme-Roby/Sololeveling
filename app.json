@@ -18,7 +18,13 @@
       "bundleIdentifier": "com.callmeroby.sololeveling",
       "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Sololeveling utilise votre position pour mesurer la distance, l'allure et le parcours de vos courses et marches, et detecter les donjons declenches par votre lieu.",
+        "NSMotionUsageDescription": "Sololeveling utilise les capteurs de mouvement pour compter vos pas et valider vos quetes journalieres.",
+        "UIBackgroundModes": ["fetch"]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
@@ -28,13 +34,45 @@
       },
       "package": "com.callmeroby.sololeveling",
       "versionCode": 1,
-      "permissions": ["INTERNET"]
+      "permissions": [
+        "INTERNET",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACTIVITY_RECOGNITION",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store"],
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Sololeveling utilise votre position pour mesurer vos courses et detecter les donjons.",
+          "locationWhenInUsePermission": "Sololeveling utilise votre position pour mesurer vos courses et detecter les donjons.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Sololeveling utilise les capteurs de mouvement pour compter vos pas et valider vos quetes."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#7c5cff",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
