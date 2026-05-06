@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { MainTabParamList } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 
+import { MissionPanelScreen } from './MissionPanelScreen';
+
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 
 const PlaceholderScreen = ({ label, hint }: { label: string; hint: string }) => (
@@ -32,15 +34,9 @@ export const MainTabs = () => (
   >
     <Tabs.Screen
       name="Mission"
+      component={MissionPanelScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'M') }}
-    >
-      {() => (
-        <PlaceholderScreen
-          label="Panneau de Mission"
-          hint="Implemente au lot 4"
-        />
-      )}
-    </Tabs.Screen>
+    />
     <Tabs.Screen
       name="Stats"
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'S') }}
