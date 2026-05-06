@@ -12,6 +12,7 @@ interface Props {
   todayValidations: readonly Validation[];
   onPressExercise: (planned: PlannedExercise, exercise: Exercise) => void;
   onLaunchGps: (exerciseId: string, workoutId: string) => void;
+  onEnterDungeon: (weekNumber: number) => void;
 }
 
 const isGpsExercise = (familyOrId: string): boolean =>
@@ -27,6 +28,7 @@ export const SessionCard = ({
   todayValidations,
   onPressExercise,
   onLaunchGps,
+  onEnterDungeon,
 }: Props) => {
   if (!workout) {
     return (
@@ -60,9 +62,11 @@ export const SessionCard = ({
             </View>
           ))}
         </View>
-        <Text style={styles.footnote}>
-          Saisie + scoring etoiles : lot 8.
-        </Text>
+        <PrimaryButton
+          label="Entrer dans le donjon"
+          onPress={() => onEnterDungeon(workout.weekNumber)}
+          style={styles.bossBtn}
+        />
       </View>
     );
   }
@@ -178,10 +182,10 @@ const styles = StyleSheet.create({
   bossTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '800' },
   bossNarrative: { color: colors.textSecondary, fontSize: 13, fontStyle: 'italic', marginTop: 4, lineHeight: 19 },
   gpsBtn: { marginBottom: 4, minHeight: 42 },
+  bossBtn: { marginTop: 8 },
   bossMarkers: { gap: 4, marginTop: 8 },
   markerLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
   markerRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },
   markerDot: { color: colors.primary, fontSize: 14, lineHeight: 19 },
   markerText: { color: colors.textPrimary, fontSize: 13, lineHeight: 19, flex: 1 },
-  footnote: { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 6 },
 });

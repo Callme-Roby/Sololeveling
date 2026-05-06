@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { BootScreen } from '@/screens/BootScreen';
 import { DonjonZeroNavigator } from '@/screens/donjonZero/DonjonZeroNavigator';
+import { DungeonRunScreen } from '@/screens/main/DungeonRunScreen';
 import { MainTabs } from '@/screens/main/MainTabs';
 import { RunScreen } from '@/screens/main/RunScreen';
 import { OnboardingNavigator } from '@/screens/onboarding/OnboardingNavigator';
@@ -44,6 +45,11 @@ export const RootNavigator = () => {
             <Stack.Screen
               name="Run"
               component={RunScreen}
+              options={{ presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="DungeonRun"
+              component={DungeonRunScreen}
               options={{ presentation: 'modal' }}
             />
           </>

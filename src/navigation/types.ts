@@ -37,6 +37,7 @@ export type RootStackParamList = {
   DonjonZero: NavigatorScreenParams<DonjonZeroStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   Run: { exerciseId?: string; workoutId?: string } | undefined;
+  DungeonRun: { weekNumber: number };
 };
 
 declare global {

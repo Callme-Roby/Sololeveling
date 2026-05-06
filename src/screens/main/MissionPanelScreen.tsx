@@ -230,6 +230,9 @@ export const MissionPanelScreen = () => {
           onLaunchGps={(exerciseId, workoutId) =>
             navigation.navigate('Run', { exerciseId, workoutId })
           }
+          onEnterDungeon={(weekNumber) =>
+            navigation.navigate('DungeonRun', { weekNumber })
+          }
         />
         <StatsCard progress={stats.progress} />
         <InventoryCard titles={today.titles} />
