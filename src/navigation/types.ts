@@ -3,8 +3,14 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type OnboardingStackParamList = {
   Welcome: undefined;
   Profile: undefined;
-  Home: undefined;
-  Ready: undefined;
+  Home: { name: string; bodyWeightKg: number };
+  Ready: {
+    name: string;
+    bodyWeightKg: number;
+    homeLat: number;
+    homeLng: number;
+    homeRadiusKm: 30 | 50 | 100;
+  };
 };
 
 export type DonjonZeroStackParamList = {
