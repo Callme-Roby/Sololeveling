@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { getExercise } from '@/data/exercises';
 import { getWeeklyDungeon } from '@/data/weeklyDungeons';
 import type { Exercise, PlannedExercise, Validation, Workout } from '@/domain/types';
@@ -10,14 +11,23 @@ interface Props {
   workout: Workout | undefined;
   todayValidations: readonly Validation[];
   onPressExercise: (planned: PlannedExercise, exercise: Exercise) => void;
+  onLaunchGps: (exerciseId: string, workoutId: string) => void;
 }
+
+const isGpsExercise = (familyOrId: string): boolean =>
+  ['footing_z2', 'sprint_short', 'sprint_long', 'walk'].includes(familyOrId);
 
 const setsDoneFor = (
   planned: PlannedExercise,
   validations: readonly Validation[],
 ): number => validations.filter((v) => v.exerciseId === planned.exerciseId).length;
 
-export const SessionCard = ({ workout, todayValidations, onPressExercise }: Props) => {
+export const SessionCard = ({
+  workout,
+  todayValidations,
+  onPressExercise,
+  onLaunchGps,
+}: Props) => {
   if (!workout) {
     return (
       <View style={styles.card}>
@@ -68,6 +78,19 @@ export const SessionCard = ({ workout, todayValidations, onPressExercise }: Prop
         <Text style={styles.detail}>Repos actif. Mobilite + hangs passifs.</Text>
       ) : (
         <View style={styles.exList}>
+          {workout.plannedExercises.find((p) => isGpsExercise(p.exerciseId)) && (
+            <PrimaryButton
+              variant="secondary"
+              label="Lancer le tracking GPS"
+              style={styles.gpsBtn}
+              onPress={() => {
+                const target = workout.plannedExercises.find((p) =>
+                  isGpsExercise(p.exerciseId),
+                );
+                if (target) onLaunchGps(target.exerciseId, workout.id);
+              }}
+            />
+          )}
           {workout.plannedExercises.map((p, i) => {
             const ex = getExercise(p.exerciseId);
             const setsDone = setsDoneFor(p, todayValidations);
@@ -154,6 +177,7 @@ const styles = StyleSheet.create({
   bossEyebrow: { color: colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },
   bossTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '800' },
   bossNarrative: { color: colors.textSecondary, fontSize: 13, fontStyle: 'italic', marginTop: 4, lineHeight: 19 },
+  gpsBtn: { marginBottom: 4, minHeight: 42 },
   bossMarkers: { gap: 4, marginTop: 8 },
   markerLabel: { color: colors.textMuted, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
   markerRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start' },

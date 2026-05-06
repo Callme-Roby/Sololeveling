@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BootScreen } from '@/screens/BootScreen';
 import { DonjonZeroNavigator } from '@/screens/donjonZero/DonjonZeroNavigator';
 import { MainTabs } from '@/screens/main/MainTabs';
+import { RunScreen } from '@/screens/main/RunScreen';
 import { OnboardingNavigator } from '@/screens/onboarding/OnboardingNavigator';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
@@ -38,7 +39,14 @@ export const RootNavigator = () => {
         ) : !user.baselinesCompleted ? (
           <Stack.Screen name="DonjonZero" component={DonjonZeroNavigator} />
         ) : (
-          <Stack.Screen name="Main" component={MainTabs} />
+          <>
+            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen
+              name="Run"
+              component={RunScreen}
+              options={{ presentation: 'modal' }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

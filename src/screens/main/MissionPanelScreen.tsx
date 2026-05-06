@@ -1,4 +1,5 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LestageSheet } from '@/components/LestageSheet';
 import { getExercise } from '@/data/exercises';
 import type { Exercise, ExerciseUnit, PlannedExercise } from '@/domain/types';
+import type { RootStackParamList } from '@/navigation/types';
 import { dailyQuestRepo } from '@/services/db';
 import { recordValidation } from '@/services/recordValidation';
 import { useAppStore } from '@/store/appStore';
@@ -83,6 +85,7 @@ export const MissionPanelScreen = () => {
   const user = useAppStore((s) => s.user);
   const today = useTodayPanel();
   const stats = useStats();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -224,6 +227,9 @@ export const MissionPanelScreen = () => {
           workout={today.workout}
           todayValidations={today.todayValidations}
           onPressExercise={onPressExercise}
+          onLaunchGps={(exerciseId, workoutId) =>
+            navigation.navigate('Run', { exerciseId, workoutId })
+          }
         />
         <StatsCard progress={stats.progress} />
         <InventoryCard titles={today.titles} />

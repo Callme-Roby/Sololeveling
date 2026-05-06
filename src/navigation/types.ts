@@ -36,6 +36,7 @@ export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   DonjonZero: NavigatorScreenParams<DonjonZeroStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
+  Run: { exerciseId?: string; workoutId?: string } | undefined;
 };
 
 declare global {
