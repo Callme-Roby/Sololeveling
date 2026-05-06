@@ -1,11 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { DailyQuestPlan, DailyQuestRecord } from '@/domain/types';
 import { colors } from '@/theme/colors';
 
+import type { QuestKind } from '../hooks/useQuestTargets';
+
 interface Props {
   plan: DailyQuestPlan;
   record: DailyQuestRecord | null;
+  onPressQuest: (kind: QuestKind) => void;
 }
 
 const QuestRow = ({
@@ -13,13 +16,19 @@ const QuestRow = ({
   detail,
   done,
   loadKg,
+  onPress,
 }: {
   label: string;
   detail: string;
   done: boolean;
   loadKg?: number;
+  onPress: () => void;
 }) => (
-  <View style={styles.row}>
+  <Pressable
+    style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+    onPress={onPress}
+    disabled={done}
+  >
     <View style={[styles.checkbox, done && styles.checkboxDone]}>
       {done && <Text style={styles.checkboxMark}>{'✓'}</Text>}
     </View>
@@ -32,10 +41,10 @@ const QuestRow = ({
         <Text style={styles.loadText}>{`+${loadKg} kg`}</Text>
       </View>
     )}
-  </View>
+  </Pressable>
 );
 
-export const QuestsCard = ({ plan, record }: Props) => {
+export const QuestsCard = ({ plan, record, onPressQuest }: Props) => {
   const completed = [
     record?.hangCompleted,
     record?.calvesCompleted,
@@ -73,26 +82,27 @@ export const QuestsCard = ({ plan, record }: Props) => {
         detail={hangLabel}
         done={record?.hangCompleted ?? false}
         loadKg={record?.hangLoadKg}
+        onPress={() => onPressQuest('hang')}
       />
       <QuestRow
         label="Mollets / Tibialis"
         detail={calvesLabel}
         done={record?.calvesCompleted ?? false}
         loadKg={record?.calvesLoadKg}
+        onPress={() => onPressQuest('calves')}
       />
       <QuestRow
         label="ATG"
         detail={atgLabel}
         done={record?.atgCompleted ?? false}
+        onPress={() => onPressQuest('atg')}
       />
       <QuestRow
         label="Crush du jour"
         detail={crushLabel}
         done={record?.crushCompleted ?? false}
+        onPress={() => onPressQuest('crush')}
       />
-      <Text style={styles.footnote}>
-        Validation interactive : lot 5 (popup lestage + sauvegarde).
-      </Text>
     </View>
   );
 };
@@ -109,7 +119,8 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   title: { color: colors.textPrimary, fontSize: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   counter: { color: colors.primary, fontSize: 14, fontWeight: '700' },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderRadius: 10 },
+  rowPressed: { backgroundColor: colors.surface },
   checkbox: {
     width: 22,
     height: 22,
@@ -132,5 +143,4 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   loadText: { color: colors.textPrimary, fontSize: 11, fontWeight: '700' },
-  footnote: { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 6 },
 });

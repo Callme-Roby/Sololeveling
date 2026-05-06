@@ -6,9 +6,10 @@ import type {
   DailyQuestPlan,
   DailyQuestRecord,
   Title,
+  Validation,
   Workout,
 } from '@/domain/types';
-import { dailyQuestRepo, titleRepo } from '@/services/db';
+import { dailyQuestRepo, titleRepo, validationRepo } from '@/services/db';
 import { useAppStore } from '@/store/appStore';
 import { dayOfWeekIso, todayDayOfWeek } from '@/utils/format';
 
@@ -20,6 +21,7 @@ export interface TodayPanelData {
   workout: Workout | undefined;
   questPlan: DailyQuestPlan;
   questRecord: DailyQuestRecord | null;
+  todayValidations: readonly Validation[];
   titles: readonly Title[];
   refresh: () => Promise<void>;
 }
@@ -31,21 +33,28 @@ export const useTodayPanel = (): TodayPanelData => {
 
   const [loading, setLoading] = useState(true);
   const [questRecord, setQuestRecord] = useState<DailyQuestRecord | null>(null);
+  const [todayValidations, setTodayValidations] = useState<readonly Validation[]>([]);
   const [titles, setTitles] = useState<readonly Title[]>([]);
 
   const phase = phaseForWeek(week);
   const questPlan = DAILY_QUESTS_BY_PHASE[phase];
   const workout = getWorkout(week, dow);
 
+  const loadAll = async () => {
+    const [q, v, t] = await Promise.all([
+      dailyQuestRepo.getByDate(todayIso),
+      validationRepo.listByDate(todayIso),
+      titleRepo.list(),
+    ]);
+    setQuestRecord(q);
+    setTodayValidations(v);
+    setTitles(t);
+  };
+
   const refresh = async () => {
     setLoading(true);
     try {
-      const [q, t] = await Promise.all([
-        dailyQuestRepo.getByDate(todayIso),
-        titleRepo.list(),
-      ]);
-      setQuestRecord(q);
-      setTitles(t);
+      await loadAll();
     } finally {
       setLoading(false);
     }
@@ -54,12 +63,14 @@ export const useTodayPanel = (): TodayPanelData => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [q, t] = await Promise.all([
+      const [q, v, t] = await Promise.all([
         dailyQuestRepo.getByDate(todayIso),
+        validationRepo.listByDate(todayIso),
         titleRepo.list(),
       ]);
       if (cancelled) return;
       setQuestRecord(q);
+      setTodayValidations(v);
       setTitles(t);
       setLoading(false);
     })();
@@ -76,6 +87,7 @@ export const useTodayPanel = (): TodayPanelData => {
     workout,
     questPlan,
     questRecord,
+    todayValidations,
     titles,
     refresh,
   };

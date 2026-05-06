@@ -1,16 +1,23 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getExercise } from '@/data/exercises';
 import { getWeeklyDungeon } from '@/data/weeklyDungeons';
-import type { Workout } from '@/domain/types';
+import type { Exercise, PlannedExercise, Validation, Workout } from '@/domain/types';
 import { colors } from '@/theme/colors';
 import { formatPlannedExercise, labelForWorkoutType } from '@/utils/format';
 
 interface Props {
   workout: Workout | undefined;
+  todayValidations: readonly Validation[];
+  onPressExercise: (planned: PlannedExercise, exercise: Exercise) => void;
 }
 
-export const SessionCard = ({ workout }: Props) => {
+const setsDoneFor = (
+  planned: PlannedExercise,
+  validations: readonly Validation[],
+): number => validations.filter((v) => v.exerciseId === planned.exerciseId).length;
+
+export const SessionCard = ({ workout, todayValidations, onPressExercise }: Props) => {
   if (!workout) {
     return (
       <View style={styles.card}>
@@ -63,18 +70,37 @@ export const SessionCard = ({ workout }: Props) => {
         <View style={styles.exList}>
           {workout.plannedExercises.map((p, i) => {
             const ex = getExercise(p.exerciseId);
+            const setsDone = setsDoneFor(p, todayValidations);
+            const planned = p.sets ?? 0;
+            const allDone = planned > 0 && setsDone >= planned;
             return (
-              <View key={`${p.exerciseId}-${i}`} style={styles.exRow}>
-                <View style={styles.exDot} />
+              <Pressable
+                key={`${p.exerciseId}-${i}`}
+                style={({ pressed }) => [
+                  styles.exRow,
+                  pressed && !allDone && styles.exRowPressed,
+                  !ex && styles.exRowDisabled,
+                ]}
+                onPress={() => ex && onPressExercise(p, ex)}
+                disabled={!ex}
+              >
+                <View style={[styles.exDot, allDone && styles.exDotDone]} />
                 <View style={styles.exContent}>
-                  <Text style={styles.exName}>
+                  <Text style={[styles.exName, allDone && styles.exNameDone]}>
                     {formatPlannedExercise(p, ex)}
                   </Text>
-                  {ex?.lestable && (
-                    <Text style={styles.exTag}>Lestable</Text>
-                  )}
+                  <View style={styles.exMeta}>
+                    {planned > 0 && (
+                      <Text
+                        style={[styles.exTag, allDone && styles.exTagDone]}
+                      >{`${setsDone}/${planned} sets`}</Text>
+                    )}
+                    {ex?.lestable && (
+                      <Text style={styles.exTag}>Lestable</Text>
+                    )}
+                  </View>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -98,12 +124,31 @@ const styles = StyleSheet.create({
   typeBadge: { color: colors.primary, fontSize: 12, fontWeight: '700' },
   workoutTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '600', marginVertical: 4 },
   detail: { color: colors.textSecondary, fontSize: 13 },
-  exList: { gap: 6, marginTop: 4 },
-  exRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingVertical: 4 },
+  exList: { gap: 4, marginTop: 4 },
+  exRow: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+  },
+  exRowPressed: { backgroundColor: colors.surface },
+  exRowDisabled: { opacity: 0.5 },
   exDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primary, marginTop: 6 },
+  exDotDone: { backgroundColor: colors.success },
   exContent: { flex: 1 },
   exName: { color: colors.textPrimary, fontSize: 14, lineHeight: 19 },
-  exTag: { color: colors.textMuted, fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
+  exNameDone: { color: colors.textSecondary },
+  exMeta: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  exTag: {
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  exTagDone: { color: colors.success },
   bossHeader: { flexDirection: 'row', gap: 12, alignItems: 'center', marginBottom: 4 },
   bossEmoji: { fontSize: 28 },
   bossEyebrow: { color: colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase' },

@@ -1,8 +1,20 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LestageSheet } from '@/components/LestageSheet';
+import { getExercise } from '@/data/exercises';
+import type { Exercise, ExerciseUnit, PlannedExercise } from '@/domain/types';
+import { dailyQuestRepo } from '@/services/db';
+import { recordValidation } from '@/services/recordValidation';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
 import { labelForWorkoutType } from '@/utils/format';
@@ -13,10 +25,64 @@ import { QuestsCard } from './components/QuestsCard';
 import { SessionCard } from './components/SessionCard';
 import { StatsStubCard } from './components/StatsStubCard';
 import { useTodayPanel } from './hooks/useTodayPanel';
+import { questTargetForKind, type QuestKind, type QuestTarget } from './hooks/useQuestTargets';
+
+interface QuestSheetTarget {
+  kind: 'quest';
+  exercise: Exercise;
+  unit: ExerciseUnit;
+  unitLabel: string;
+  target: QuestTarget;
+  defaultValue: string;
+}
+
+interface SessionSheetTarget {
+  kind: 'session';
+  exercise: Exercise;
+  unit: ExerciseUnit;
+  unitLabel: string;
+  planned: PlannedExercise;
+  defaultValue: string;
+}
+
+type SheetTarget = QuestSheetTarget | SessionSheetTarget;
+
+const unitLabel = (unit: ExerciseUnit): string => {
+  switch (unit) {
+    case 'reps': return 'reps';
+    case 'seconds': return 'secondes';
+    case 'meters': return 'metres';
+    case 'minutes': return 'minutes';
+  }
+};
+
+const inferPlannedUnit = (
+  planned: PlannedExercise,
+  exercise: Exercise,
+): { unit: ExerciseUnit; defaultValue: string } => {
+  if (planned.durationSecPerSet !== undefined) {
+    return { unit: 'seconds', defaultValue: String(planned.durationSecPerSet) };
+  }
+  if (planned.distanceMPerSet !== undefined) {
+    return { unit: 'meters', defaultValue: String(planned.distanceMPerSet) };
+  }
+  if (planned.repsPerSet !== undefined) {
+    return { unit: 'reps', defaultValue: String(planned.repsPerSet) };
+  }
+  if (planned.totalDurationMin !== undefined) {
+    return { unit: 'minutes', defaultValue: String(planned.totalDurationMin) };
+  }
+  if (planned.totalReps !== undefined) {
+    return { unit: 'reps', defaultValue: String(planned.totalReps) };
+  }
+  return { unit: exercise.unit, defaultValue: '' };
+};
 
 export const MissionPanelScreen = () => {
   const user = useAppStore((s) => s.user);
   const today = useTodayPanel();
+  const [sheet, setSheet] = useState<SheetTarget | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -33,6 +99,94 @@ export const MissionPanelScreen = () => {
       </SafeAreaView>
     );
   }
+
+  const onPressQuest = (kind: QuestKind) => {
+    const target = questTargetForKind(kind, today.questPlan);
+    const exercise = getExercise(target.exerciseId);
+    if (!exercise) return;
+    setSheet({
+      kind: 'quest',
+      exercise,
+      unit: target.unit,
+      unitLabel: target.unitLabel,
+      target,
+      defaultValue: String(target.defaultValue),
+    });
+  };
+
+  const onPressExercise = (planned: PlannedExercise, exercise: Exercise) => {
+    const inferred = inferPlannedUnit(planned, exercise);
+    setSheet({
+      kind: 'session',
+      exercise,
+      unit: inferred.unit,
+      unitLabel: unitLabel(inferred.unit),
+      planned,
+      defaultValue: inferred.defaultValue,
+    });
+  };
+
+  const handleSubmit = async ({
+    value,
+    loadKg,
+  }: {
+    value: number;
+    loadKg: number;
+  }) => {
+    if (!sheet) return;
+    setSubmitting(true);
+    try {
+      const result = await recordValidation({
+        exerciseId: sheet.exercise.id,
+        value,
+        unit: sheet.unit,
+        loadKg,
+        bodyWeightKg: user.bodyWeightKg,
+        streakDays: user.streakDays,
+        workoutId: today.workout?.id,
+      });
+
+      if (sheet.kind === 'quest') {
+        const existing = today.questRecord;
+        const t = sheet.target;
+        await dailyQuestRepo.upsert({
+          date: today.todayIso,
+          hangCompleted: existing?.hangCompleted ?? false,
+          hangSeconds: existing?.hangSeconds ?? 0,
+          hangLoadKg: existing?.hangLoadKg ?? 0,
+          calvesCompleted: existing?.calvesCompleted ?? false,
+          calvesLoadKg: existing?.calvesLoadKg ?? 0,
+          atgCompleted: existing?.atgCompleted ?? false,
+          atgSeconds: existing?.atgSeconds ?? 0,
+          crushCompleted: existing?.crushCompleted ?? false,
+          crushSeconds: existing?.crushSeconds ?? 0,
+          penaltyApplied: existing?.penaltyApplied ?? false,
+          [t.questCompletedField]: true,
+          ...(t.questValueField ? { [t.questValueField]: value } : {}),
+          ...(t.questLoadField ? { [t.questLoadField]: loadKg } : {}),
+        });
+      }
+
+      setSheet(null);
+      await today.refresh();
+
+      if (result.isPersonalRecord) {
+        Alert.alert(
+          'Nouveau record personnel',
+          `${sheet.exercise.name} : ${value} ${unitLabel(sheet.unit)}${
+            loadKg > 0 ? ` + ${loadKg} kg` : ''
+          }\n+${result.xpEarned.toFixed(1)} XP`,
+        );
+      }
+    } catch (err) {
+      Alert.alert(
+        'Erreur',
+        err instanceof Error ? err.message : 'Impossible de sauvegarder.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const workoutTypeLabel = today.workout
     ? labelForWorkoutType(today.workout.type)
@@ -58,11 +212,31 @@ export const MissionPanelScreen = () => {
           />
         }
       >
-        <QuestsCard plan={today.questPlan} record={today.questRecord} />
-        <SessionCard workout={today.workout} />
+        <QuestsCard
+          plan={today.questPlan}
+          record={today.questRecord}
+          onPressQuest={onPressQuest}
+        />
+        <SessionCard
+          workout={today.workout}
+          todayValidations={today.todayValidations}
+          onPressExercise={onPressExercise}
+        />
         <StatsStubCard />
         <InventoryCard titles={today.titles} />
       </ScrollView>
+      {sheet && (
+        <LestageSheet
+          visible
+          exercise={sheet.exercise}
+          unitLabel={sheet.unitLabel}
+          unitOverride={sheet.unit}
+          initialValue={sheet.defaultValue}
+          onCancel={() => setSheet(null)}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+        />
+      )}
     </SafeAreaView>
   );
 };
