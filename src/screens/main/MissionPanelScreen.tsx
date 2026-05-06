@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +16,7 @@ import { LestageSheet } from '@/components/LestageSheet';
 import { getExercise } from '@/data/exercises';
 import type { Exercise, ExerciseUnit, PlannedExercise } from '@/domain/types';
 import type { RootStackParamList } from '@/navigation/types';
+import { persistStreak, recomputeStreakDays } from '@/services/dailyRollover';
 import { dailyQuestRepo } from '@/services/db';
 import { recordValidation } from '@/services/recordValidation';
 import { useAppStore } from '@/store/appStore';
@@ -83,6 +85,7 @@ const inferPlannedUnit = (
 
 export const MissionPanelScreen = () => {
   const user = useAppStore((s) => s.user);
+  const setUser = useAppStore((s) => s.setUser);
   const today = useTodayPanel();
   const stats = useStats();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -171,6 +174,9 @@ export const MissionPanelScreen = () => {
           ...(t.questValueField ? { [t.questValueField]: value } : {}),
           ...(t.questLoadField ? { [t.questLoadField]: loadKg } : {}),
         });
+        const newStreak = await recomputeStreakDays(today.todayIso);
+        const updatedUser = await persistStreak(user, newStreak);
+        if (updatedUser !== user) setUser(updatedUser);
       }
 
       setSheet(null);
@@ -218,6 +224,17 @@ export const MissionPanelScreen = () => {
           />
         }
       >
+        {today.questRecord?.penaltyApplied && (
+          <View style={styles.penaltyBanner}>
+            <View style={styles.penaltyDot} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.penaltyTitle}>Penalite : volume double</Text>
+              <Text style={styles.penaltyBody}>
+                Quete ratee hier. Aujourd'hui, fais le double pour rattraper.
+              </Text>
+            </View>
+          </View>
+        )}
         <QuestsCard
           plan={today.questPlan}
           record={today.questRecord}
@@ -257,4 +274,22 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   body: { padding: 16, gap: 12 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  penaltyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: 12,
+    padding: 14,
+  },
+  penaltyDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.danger,
+  },
+  penaltyTitle: { color: colors.danger, fontSize: 13, fontWeight: '700' },
+  penaltyBody: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
 });

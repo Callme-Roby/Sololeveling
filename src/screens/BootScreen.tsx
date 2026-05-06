@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { runDailyRollover } from '@/services/dailyRollover';
 import { openDatabase, userRepo } from '@/services/db';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
@@ -17,7 +18,12 @@ export const BootScreen = () => {
       try {
         await openDatabase();
         const user = await userRepo.getCurrent();
-        if (!cancelled) setBootReady(user);
+        if (user) {
+          const { user: rolledUser } = await runDailyRollover(user);
+          if (!cancelled) setBootReady(rolledUser);
+        } else if (!cancelled) {
+          setBootReady(null);
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Erreur inconnue';
         if (!cancelled) setBootError(msg);
