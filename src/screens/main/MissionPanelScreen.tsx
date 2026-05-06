@@ -23,8 +23,9 @@ import { InventoryCard } from './components/InventoryCard';
 import { MissionHeader } from './components/MissionHeader';
 import { QuestsCard } from './components/QuestsCard';
 import { SessionCard } from './components/SessionCard';
-import { StatsStubCard } from './components/StatsStubCard';
+import { StatsCard } from './components/StatsCard';
 import { useTodayPanel } from './hooks/useTodayPanel';
+import { useStats } from './hooks/useStats';
 import { questTargetForKind, type QuestKind, type QuestTarget } from './hooks/useQuestTargets';
 
 interface QuestSheetTarget {
@@ -81,13 +82,15 @@ const inferPlannedUnit = (
 export const MissionPanelScreen = () => {
   const user = useAppStore((s) => s.user);
   const today = useTodayPanel();
+  const stats = useStats();
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       today.refresh();
-    }, [today]),
+      stats.refresh();
+    }, [today, stats]),
   );
 
   if (!user) {
@@ -168,7 +171,7 @@ export const MissionPanelScreen = () => {
       }
 
       setSheet(null);
-      await today.refresh();
+      await Promise.all([today.refresh(), stats.refresh()]);
 
       if (result.isPersonalRecord) {
         Alert.alert(
@@ -222,7 +225,7 @@ export const MissionPanelScreen = () => {
           todayValidations={today.todayValidations}
           onPressExercise={onPressExercise}
         />
-        <StatsStubCard />
+        <StatsCard progress={stats.progress} />
         <InventoryCard titles={today.titles} />
       </ScrollView>
       {sheet && (

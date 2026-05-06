@@ -1,7 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { STATS } from '@/domain/types';
+import { StatBar } from '@/components/StatBar';
 import { colors } from '@/theme/colors';
+
+import type { StatProgressView } from '../hooks/useStats';
+
+interface Props {
+  progress: readonly StatProgressView[];
+}
 
 const STAT_LABELS: Record<string, string> = {
   VIT: 'Vitalite',
@@ -10,22 +16,22 @@ const STAT_LABELS: Record<string, string> = {
   GRP: 'Grip',
 };
 
-export const StatsStubCard = () => (
+export const StatsCard = ({ progress }: Props) => (
   <View style={styles.card}>
     <Text style={styles.title}>Stats</Text>
-    {STATS.map((stat) => (
-      <View key={stat} style={styles.row}>
+    {progress.map((p) => (
+      <View key={p.stat} style={styles.row}>
         <View style={styles.labelBox}>
-          <Text style={styles.statKey}>{stat}</Text>
-          <Text style={styles.statName}>{STAT_LABELS[stat]}</Text>
+          <Text style={styles.statKey}>{p.stat}</Text>
+          <Text style={styles.statName}>{STAT_LABELS[p.stat]}</Text>
         </View>
-        <View style={styles.bar}>
-          <View style={[styles.fill, { width: '0%' }]} />
+        <StatBar progress={p.progress} />
+        <View style={styles.numbers}>
+          <Text style={styles.level}>{`Niv ${p.level}`}</Text>
+          <Text style={styles.xp}>{`${Math.round(p.totalXp)} XP`}</Text>
         </View>
-        <Text style={styles.value}>0</Text>
       </View>
     ))}
-    <Text style={styles.footnote}>Calcul XP + barres animees : lot 6.</Text>
   </View>
 );
 
@@ -36,7 +42,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 14,
     padding: 14,
-    gap: 10,
+    gap: 12,
   },
   title: {
     color: colors.textPrimary,
@@ -50,16 +56,7 @@ const styles = StyleSheet.create({
   labelBox: { width: 70 },
   statKey: { color: colors.primary, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
   statName: { color: colors.textMuted, fontSize: 10 },
-  bar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: colors.surface,
-    borderRadius: 4,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  fill: { height: '100%', backgroundColor: colors.primary },
-  value: { color: colors.textSecondary, fontSize: 12, fontWeight: '600', minWidth: 40, textAlign: 'right' },
-  footnote: { color: colors.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 4 },
+  numbers: { minWidth: 70, alignItems: 'flex-end' },
+  level: { color: colors.textPrimary, fontSize: 12, fontWeight: '700' },
+  xp: { color: colors.textMuted, fontSize: 10 },
 });
