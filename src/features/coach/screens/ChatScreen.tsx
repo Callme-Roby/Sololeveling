@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ChatInput } from '@/components/ChatInput';
-import { MessageBubble } from '@/components/MessageBubble';
-import { useChat } from '@/hooks/useChat';
 import { getLLM } from '@/services/llm';
 import { colors } from '@/theme/colors';
+
+import { ChatInput } from '../components/ChatInput';
+import { MessageBubble } from '../components/MessageBubble';
+import { useChat } from '../hooks/useChat';
 
 const SYSTEM_PROMPT =
   "Tu es l'assistant de l'app Sololeveling. Reponds avec concision et en francais.";
