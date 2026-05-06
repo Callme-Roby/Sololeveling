@@ -150,6 +150,12 @@ export const MIGRATIONS: readonly Migration[] = [
       );
     `,
   },
+  {
+    version: 2,
+    up: `
+      ALTER TABLE user_profile ADD COLUMN must_redo_from_week INTEGER;
+    `,
+  },
 ];
 
 export const LATEST_VERSION = MIGRATIONS[MIGRATIONS.length - 1]?.version ?? 0;

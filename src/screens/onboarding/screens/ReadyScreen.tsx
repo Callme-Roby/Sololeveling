@@ -35,6 +35,7 @@ export const ReadyScreen = ({ route }: Props) => {
         notificationsEnabled: false,
         weatherEnabled: false,
         backgroundLocationEnabled: false,
+        mustRedoFromWeek: null,
       });
       setUser(user);
     } catch (err) {

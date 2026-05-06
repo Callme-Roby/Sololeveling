@@ -20,6 +20,7 @@ interface UserProfileRow {
   notifications_enabled: number;
   weather_enabled: number;
   background_location_enabled: number;
+  must_redo_from_week: number | null;
 }
 
 const rowToProfile = (row: UserProfileRow): UserProfile => ({
@@ -41,6 +42,7 @@ const rowToProfile = (row: UserProfileRow): UserProfile => ({
   notificationsEnabled: toBool(row.notifications_enabled),
   weatherEnabled: toBool(row.weather_enabled),
   backgroundLocationEnabled: toBool(row.background_location_enabled),
+  mustRedoFromWeek: row.must_redo_from_week,
 });
 
 export const userRepo = {
@@ -133,6 +135,15 @@ export const userRepo = {
     await db.runAsync(
       "UPDATE user_profile SET baselines_completed = ?, updated_at = datetime('now') WHERE id = ?",
       fromBool(completed),
+      id,
+    );
+  },
+
+  async setMustRedoFromWeek(id: string, week: number | null): Promise<void> {
+    const db = await openDatabase();
+    await db.runAsync(
+      "UPDATE user_profile SET must_redo_from_week = ?, updated_at = datetime('now') WHERE id = ?",
+      week,
       id,
     );
   },

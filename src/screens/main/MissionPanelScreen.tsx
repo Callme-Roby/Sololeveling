@@ -235,6 +235,17 @@ export const MissionPanelScreen = () => {
             </View>
           </View>
         )}
+        {user.mustRedoFromWeek !== null && (
+          <View style={styles.redoBanner}>
+            <View style={styles.penaltyDot} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.redoTitle}>{`Tu refais la semaine ${user.mustRedoFromWeek}`}</Text>
+              <Text style={styles.penaltyBody}>
+                Donjon de Porte rate. Termine la semaine et retente le donjon.
+              </Text>
+            </View>
+          </View>
+        )}
         <QuestsCard
           plan={today.questPlan}
           record={today.questRecord}
@@ -292,4 +303,15 @@ const styles = StyleSheet.create({
   },
   penaltyTitle: { color: colors.danger, fontSize: 13, fontWeight: '700' },
   penaltyBody: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
+  redoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    padding: 14,
+  },
+  redoTitle: { color: colors.primary, fontSize: 13, fontWeight: '700' },
 });

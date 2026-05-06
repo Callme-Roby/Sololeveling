@@ -22,11 +22,12 @@ export interface AppStoreState {
   setCurrentWeek: (week: number) => void;
 }
 
-const computeWeekFromStartDate = (startDate: string): number => {
+const computeWeekFromStartDate = (startDate: string, cap?: number | null): number => {
   const start = new Date(startDate).getTime();
   if (Number.isNaN(start)) return 1;
   const diffDays = Math.floor((Date.now() - start) / (1000 * 60 * 60 * 24));
-  return Math.max(1, Math.min(12, Math.floor(diffDays / 7) + 1));
+  const dateBased = Math.max(1, Math.min(12, Math.floor(diffDays / 7) + 1));
+  return cap && cap >= 1 ? Math.min(dateBased, cap) : dateBased;
 };
 
 export const useAppStore = create<AppStoreState>((set) => ({
@@ -40,7 +41,9 @@ export const useAppStore = create<AppStoreState>((set) => ({
       bootStatus: 'ready',
       bootError: null,
       user,
-      currentWeek: user ? computeWeekFromStartDate(user.startDate) : 1,
+      currentWeek: user
+        ? computeWeekFromStartDate(user.startDate, user.mustRedoFromWeek)
+        : 1,
     }),
 
   setBootError: (msg) =>
@@ -49,7 +52,9 @@ export const useAppStore = create<AppStoreState>((set) => ({
   setUser: (user) =>
     set({
       user,
-      currentWeek: user ? computeWeekFromStartDate(user.startDate) : 1,
+      currentWeek: user
+        ? computeWeekFromStartDate(user.startDate, user.mustRedoFromWeek)
+        : 1,
     }),
 
   patchUser: (patch) =>

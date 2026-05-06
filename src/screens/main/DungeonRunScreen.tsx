@@ -17,7 +17,7 @@ import { TextField } from '@/components/TextField';
 import { getWeeklyDungeon } from '@/data/weeklyDungeons';
 import type { DungeonAttempt, WeeklyDungeon } from '@/domain/types';
 import type { RootStackParamList as Stack } from '@/navigation/types';
-import { dungeonAttemptRepo, titleRepo } from '@/services/db';
+import { dungeonAttemptRepo, titleRepo, userRepo } from '@/services/db';
 import { scoreDungeon } from '@/services/dungeonScoring';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
@@ -58,6 +58,7 @@ export const DungeonRunScreen = ({ navigation, route }: Props) => {
     [weekNumber],
   ) as WeeklyDungeon | undefined;
   const user = useAppStore((s) => s.user);
+  const setUser = useAppStore((s) => s.setUser);
   const discipline = useWeekDiscipline();
 
   const [values, setValues] = useState<Record<string, string>>({});
@@ -117,6 +118,8 @@ export const DungeonRunScreen = ({ navigation, route }: Props) => {
         starsAchieved: completed ? score.stars : 0,
         completed,
       });
+      let rankAwarded: typeof user.rank | null = null;
+      let redoSet: number | null = null;
       if (completed && score.stars >= 1) {
         await titleRepo.unlock({
           name: dungeon.titleOnSuccess,
@@ -124,12 +127,34 @@ export const DungeonRunScreen = ({ navigation, route }: Props) => {
           unlockedAt: new Date().toISOString(),
           dungeonId: dungeon.id,
         });
+        if (dungeon.kind === 'porte' && dungeon.rankAwarded) {
+          await userRepo.setRank(user.id, dungeon.rankAwarded);
+          rankAwarded = dungeon.rankAwarded;
+          if (user.mustRedoFromWeek !== null) {
+            await userRepo.setMustRedoFromWeek(user.id, null);
+          }
+          setUser({
+            ...user,
+            rank: dungeon.rankAwarded,
+            mustRedoFromWeek: null,
+          });
+        }
+      } else if (dungeon.kind === 'porte' && !completed) {
+        await userRepo.setMustRedoFromWeek(user.id, dungeon.weekNumber);
+        redoSet = dungeon.weekNumber;
+        setUser({ ...user, mustRedoFromWeek: dungeon.weekNumber });
       }
       Alert.alert(
-        completed ? `${score.stars} etoile${score.stars > 1 ? 's' : ''}` : 'Donjon abandonne',
+        completed
+          ? rankAwarded
+            ? `Rang ${rankAwarded} atteint`
+            : `${score.stars} etoile${score.stars > 1 ? 's' : ''}`
+          : 'Donjon abandonne',
         completed
           ? `Titre ${dungeon.titleOnSuccess} ${score.stars >= 1 ? 'debloque' : 'pas debloque'}`
-          : 'Aucune progression enregistree',
+          : redoSet
+            ? `Tu refais la semaine ${redoSet} avant de monter de rang.`
+            : 'Aucune progression enregistree',
       );
       navigation.goBack();
     } catch (err) {

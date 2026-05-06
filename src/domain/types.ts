@@ -256,6 +256,7 @@ export interface UserProfile {
   notificationsEnabled: boolean;
   weatherEnabled: boolean;
   backgroundLocationEnabled: boolean;
+  mustRedoFromWeek: number | null;
 }
 
 export interface BaselineSet {
