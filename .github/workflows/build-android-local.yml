@@ -52,10 +52,42 @@ jobs:
       - name: Generate placeholder assets
         run: |
           mkdir -p assets
-          convert -size 1024x1024 xc:'#0b0f17' assets/icon.png
-          convert -size 1024x1024 xc:'#0b0f17' assets/adaptive-icon.png
-          convert -size 1284x2778 xc:'#0b0f17' assets/splash.png
-          convert -size 64x64 xc:'#0b0f17' assets/favicon.png
+          python3 - <<'PY'
+          import struct, zlib
+
+          def make_png(w, h, hex_color, path):
+              r = int(hex_color[1:3], 16)
+              g = int(hex_color[3:5], 16)
+              b = int(hex_color[5:7], 16)
+              sig = b'\x89PNG\r\n\x1a\n'
+              ihdr_data = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
+              ihdr_chunk = b'IHDR' + ihdr_data
+              ihdr = (
+                  struct.pack('>I', len(ihdr_data)) + ihdr_chunk +
+                  struct.pack('>I', zlib.crc32(ihdr_chunk))
+              )
+              row = b'\x00' + bytes([r, g, b]) * w
+              raw = row * h
+              compressed = zlib.compress(raw)
+              idat_chunk = b'IDAT' + compressed
+              idat = (
+                  struct.pack('>I', len(compressed)) + idat_chunk +
+                  struct.pack('>I', zlib.crc32(idat_chunk))
+              )
+              iend_chunk = b'IEND'
+              iend = (
+                  struct.pack('>I', 0) + iend_chunk +
+                  struct.pack('>I', zlib.crc32(iend_chunk))
+              )
+              with open(path, 'wb') as f:
+                  f.write(sig + ihdr + idat + iend)
+
+          color = '#0b0f17'
+          make_png(1024, 1024, color, 'assets/icon.png')
+          make_png(1024, 1024, color, 'assets/adaptive-icon.png')
+          make_png(1284, 2778, color, 'assets/splash.png')
+          make_png(64, 64, color, 'assets/favicon.png')
+          PY
           ls -la assets/
 
       - name: Expo prebuild (android only)

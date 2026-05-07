@@ -1,1 +1,1 @@
-build 2 - drop npm cache (no lock file)
+build 3 - python PNG generator (no ImageMagick dep)
