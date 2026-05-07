@@ -1,1 +1,1 @@
-build 3 - python PNG generator (no ImageMagick dep)
+build 4 - assembleRelease + preview keystore (autonomous APK with JS bundle)
