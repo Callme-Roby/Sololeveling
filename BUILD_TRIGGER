@@ -1,1 +1,1 @@
-build 4 - assembleRelease + preview keystore (autonomous APK with JS bundle)
+build 5 - fix CompleteScreen infinite loading + complete 4 main tabs

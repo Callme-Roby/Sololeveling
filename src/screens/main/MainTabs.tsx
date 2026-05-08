@@ -1,22 +1,16 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text } from 'react-native';
 
 import type { MainTabParamList } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 
 import { MissionPanelScreen } from './MissionPanelScreen';
+import { DonjonsScreen } from './tabs/DonjonsScreen';
+import { InventaireScreen } from './tabs/InventaireScreen';
+import { ProfilScreen } from './tabs/ProfilScreen';
+import { StatsScreen } from './tabs/StatsScreen';
 
 const Tabs = createBottomTabNavigator<MainTabParamList>();
-
-const PlaceholderScreen = ({ label, hint }: { label: string; hint: string }) => (
-  <SafeAreaView style={styles.safe}>
-    <View style={styles.body}>
-      <Text style={styles.title}>{label}</Text>
-      <Text style={styles.subtitle}>{hint}</Text>
-    </View>
-  </SafeAreaView>
-);
 
 const labelToIcon = (focused: boolean, label: string) => (
   <Text style={[styles.icon, focused && styles.iconFocused]}>{label}</Text>
@@ -39,42 +33,28 @@ export const MainTabs = () => (
     />
     <Tabs.Screen
       name="Stats"
+      component={StatsScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'S') }}
-    >
-      {() => <PlaceholderScreen label="Stats" hint="Lot 6" />}
-    </Tabs.Screen>
+    />
     <Tabs.Screen
       name="Donjons"
+      component={DonjonsScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'D') }}
-    >
-      {() => <PlaceholderScreen label="Donjons" hint="Lot 8" />}
-    </Tabs.Screen>
+    />
     <Tabs.Screen
       name="Inventaire"
+      component={InventaireScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'I') }}
-    >
-      {() => <PlaceholderScreen label="Inventaire" hint="Phase 2" />}
-    </Tabs.Screen>
+    />
     <Tabs.Screen
       name="Profil"
+      component={ProfilScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'P') }}
-    >
-      {() => <PlaceholderScreen label="Profil" hint="Lot 4" />}
-    </Tabs.Screen>
+    />
   </Tabs.Navigator>
 );
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  body: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 8,
-  },
-  title: { color: colors.textPrimary, fontSize: 22, fontWeight: '700' },
-  subtitle: { color: colors.textSecondary, fontSize: 14 },
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.border,

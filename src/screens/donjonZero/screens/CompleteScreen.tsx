@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,43 +14,30 @@ type Props = NativeStackScreenProps<DonjonZeroStackParamList, 'Complete'>;
 export const CompleteScreen = ({ navigation }: Props) => {
   const userId = useAppStore((s) => s.user?.id);
   const setBaselinesCompleted = useAppStore((s) => s.setBaselinesCompleted);
-  const [unlocking, setUnlocking] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const exists = await titleRepo.hasName('Mesure');
-        if (!exists) {
-          await titleRepo.unlock({
-            name: 'Mesure',
-            source: 'milestone',
-            unlockedAt: new Date().toISOString(),
-          });
-        }
-        await userRepo.setBaselinesCompleted(userId, true);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Erreur inconnue');
-        }
-      } finally {
-        if (!cancelled) setUnlocking(false);
+  if (!userId) return null;
+
+  const finishAndOpen = async () => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const has = await titleRepo.hasName('Mesure');
+      if (!has) {
+        await titleRepo.unlock({
+          name: 'Mesure',
+          source: 'milestone',
+          unlockedAt: new Date().toISOString(),
+        });
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const enterMissionPanel = () => {
-    setBaselinesCompleted(true);
+      await userRepo.setBaselinesCompleted(userId, true);
+      setBaselinesCompleted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      setSubmitting(false);
+    }
   };
-
-  if (!userId) {
-    return null;
-  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -80,13 +67,14 @@ export const CompleteScreen = ({ navigation }: Props) => {
       <View style={styles.footer}>
         <PrimaryButton
           label="Ouvrir le Panneau de Mission"
-          onPress={enterMissionPanel}
-          loading={unlocking}
+          onPress={finishAndOpen}
+          loading={submitting}
         />
         <PrimaryButton
           label="Revoir mes baselines"
           variant="ghost"
           onPress={() => navigation.popToTop()}
+          disabled={submitting}
         />
       </View>
     </SafeAreaView>
