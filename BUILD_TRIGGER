@@ -1,1 +1,1 @@
-build 5 - fix CompleteScreen infinite loading + complete 4 main tabs
+build 6 - safety timeouts on CompleteScreen + BootScreen retry actually retries

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { runDailyRollover } from '@/services/dailyRollover';
@@ -11,28 +11,50 @@ export const BootScreen = () => {
   const bootError = useAppStore((s) => s.bootError);
   const setBootReady = useAppStore((s) => s.setBootReady);
   const setBootError = useAppStore((s) => s.setBootError);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    const timeoutId = setTimeout(() => {
+      if (!cancelled) {
+        setBootError('Demarrage trop long. Reessaie ou ferme et rouvre l\'app.');
+      }
+    }, 12000);
+
     (async () => {
       try {
         await openDatabase();
         const user = await userRepo.getCurrent();
+        if (cancelled) return;
         if (user) {
           const { user: rolledUser } = await runDailyRollover(user);
-          if (!cancelled) setBootReady(rolledUser);
-        } else if (!cancelled) {
+          if (!cancelled) {
+            clearTimeout(timeoutId);
+            setBootReady(rolledUser);
+          }
+        } else {
+          clearTimeout(timeoutId);
           setBootReady(null);
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Erreur inconnue';
-        if (!cancelled) setBootError(msg);
+        if (!cancelled) {
+          clearTimeout(timeoutId);
+          setBootError(msg);
+        }
       }
     })();
+
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
-  }, [setBootReady, setBootError]);
+  }, [attempt, setBootReady, setBootError]);
+
+  const retry = () => {
+    useAppStore.setState({ bootStatus: 'pending', bootError: null });
+    setAttempt((n) => n + 1);
+  };
 
   return (
     <View style={styles.container}>
@@ -47,10 +69,7 @@ export const BootScreen = () => {
         <>
           <Text style={styles.errorTitle}>Echec d'initialisation</Text>
           <Text style={styles.errorBody}>{bootError}</Text>
-          <Pressable
-            style={styles.retry}
-            onPress={() => useAppStore.setState({ bootStatus: 'pending', bootError: null })}
-          >
+          <Pressable style={styles.retry} onPress={retry}>
             <Text style={styles.retryText}>Reessayer</Text>
           </Pressable>
         </>

@@ -22,6 +22,16 @@ export const CompleteScreen = ({ navigation }: Props) => {
   const finishAndOpen = async () => {
     setSubmitting(true);
     setError(null);
+
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      setError(
+        'Les ecritures prennent trop de temps. Reessaie, ou ferme et rouvre l\'app.',
+      );
+      setSubmitting(false);
+    }, 8000);
+
     try {
       const has = await titleRepo.hasName('Mesure');
       if (!has) {
@@ -32,8 +42,13 @@ export const CompleteScreen = ({ navigation }: Props) => {
         });
       }
       await userRepo.setBaselinesCompleted(userId, true);
+      clearTimeout(timeoutId);
+      if (timedOut) return;
+      setSubmitting(false);
       setBaselinesCompleted(true);
     } catch (err) {
+      clearTimeout(timeoutId);
+      if (timedOut) return;
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
       setSubmitting(false);
     }
