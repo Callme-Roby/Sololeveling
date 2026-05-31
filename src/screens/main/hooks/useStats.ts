@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { Stat } from '@/domain/types';
 import { appStateRepo, validationRepo } from '@/services/db';
@@ -41,19 +41,15 @@ export const useStats = (): UseStatsResult => {
   });
   const [loading, setLoading] = useState(true);
 
-  const compute = async () => {
-    const all = await validationRepo.listAll();
-    setTotals(sumXpByStat(all));
-  };
-
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      await compute();
+      const all = await validationRepo.listAll();
+      setTotals(sumXpByStat(all));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,10 +73,11 @@ export const useStats = (): UseStatsResult => {
           await appStateRepo.set(DONJON_ZERO_GRANT_KEY, new Date().toISOString());
         }
       }
-      if (!cancelled) {
-        await compute();
-        if (!cancelled) setLoading(false);
-      }
+      if (cancelled) return;
+      const all = await validationRepo.listAll();
+      if (cancelled) return;
+      setTotals(sumXpByStat(all));
+      setLoading(false);
     })();
     return () => {
       cancelled = true;

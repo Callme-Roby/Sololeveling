@@ -92,11 +92,13 @@ export const MissionPanelScreen = () => {
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const refreshToday = today.refresh;
+  const refreshStats = stats.refresh;
   useFocusEffect(
     useCallback(() => {
-      today.refresh();
-      stats.refresh();
-    }, [today, stats]),
+      refreshToday();
+      refreshStats();
+    }, [refreshToday, refreshStats]),
   );
 
   if (!user) {

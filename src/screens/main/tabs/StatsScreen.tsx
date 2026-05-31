@@ -26,11 +26,12 @@ const STAT_DESCRIPTIONS: Record<string, string> = {
 export const StatsScreen = () => {
   const user = useAppStore((s) => s.user);
   const stats = useStats();
+  const refreshStats = stats.refresh;
 
   useFocusEffect(
     useCallback(() => {
-      stats.refresh();
-    }, [stats]),
+      refreshStats();
+    }, [refreshStats]),
   );
 
   if (!user) return null;

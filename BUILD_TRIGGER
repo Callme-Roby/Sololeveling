@@ -1,1 +1,1 @@
-build 6 - safety timeouts on CompleteScreen + BootScreen retry actually retries
+build 7 - fix infinite refresh loop on Mission Panel (stable useCallback refresh)

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { DAILY_QUESTS_BY_PHASE, phaseForWeek } from '@/data/dailyQuests';
 import { getWorkout } from '@/data/workouts';
@@ -40,25 +40,21 @@ export const useTodayPanel = (): TodayPanelData => {
   const questPlan = DAILY_QUESTS_BY_PHASE[phase];
   const workout = getWorkout(week, dow);
 
-  const loadAll = async () => {
-    const [q, v, t] = await Promise.all([
-      dailyQuestRepo.getByDate(todayIso),
-      validationRepo.listByDate(todayIso),
-      titleRepo.list(),
-    ]);
-    setQuestRecord(q);
-    setTodayValidations(v);
-    setTitles(t);
-  };
-
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      await loadAll();
+      const [q, v, t] = await Promise.all([
+        dailyQuestRepo.getByDate(todayIso),
+        validationRepo.listByDate(todayIso),
+        titleRepo.list(),
+      ]);
+      setQuestRecord(q);
+      setTodayValidations(v);
+      setTitles(t);
     } finally {
       setLoading(false);
     }
-  };
+  }, [todayIso]);
 
   useEffect(() => {
     let cancelled = false;
