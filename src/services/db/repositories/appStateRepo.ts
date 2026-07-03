@@ -51,4 +51,6 @@ export const APP_STATE_KEYS = {
   LAST_WEATHER_CHECK_AT: 'last_weather_check_at',
   CONSECUTIVE_PENALTIES: 'consecutive_penalties',
   LESTAGE_MEMORY: 'lestage_memory',
+  ALARM_CONFIG: 'alarm_config',
+  LAST_MORNING_MISSION_DATE: 'last_morning_mission_date',
 } as const;

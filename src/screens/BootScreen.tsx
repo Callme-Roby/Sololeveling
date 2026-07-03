@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 
 import { runDailyRollover } from '@/services/dailyRollover';
 import { openDatabase, userRepo } from '@/services/db';
+import { setupNotifications } from '@/services/notifications';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
 
@@ -24,6 +25,7 @@ export const BootScreen = () => {
     (async () => {
       try {
         await openDatabase();
+        await setupNotifications().catch(() => {});
         const user = await userRepo.getCurrent();
         if (cancelled) return;
         if (user) {

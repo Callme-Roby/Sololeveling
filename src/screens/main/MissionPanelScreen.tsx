@@ -25,6 +25,7 @@ import { labelForWorkoutType } from '@/utils/format';
 
 import { InventoryCard } from './components/InventoryCard';
 import { MissionHeader } from './components/MissionHeader';
+import { MorningMissionCard } from './components/MorningMissionCard';
 import { QuestsCard } from './components/QuestsCard';
 import { SessionCard } from './components/SessionCard';
 import { StatsCard } from './components/StatsCard';
@@ -226,6 +227,7 @@ export const MissionPanelScreen = () => {
           />
         }
       >
+        <MorningMissionCard />
         {today.questRecord?.penaltyApplied && (
           <View style={styles.penaltyBanner}>
             <View style={styles.penaltyDot} />

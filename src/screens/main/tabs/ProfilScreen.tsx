@@ -13,6 +13,8 @@ import { resetDatabase } from '@/services/db';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
 
+import { AlarmCard } from '../components/AlarmCard';
+
 const Row = ({ label, value }: { label: string; value: string }) => (
   <View style={styles.row}>
     <Text style={styles.rowLabel}>{label}</Text>
@@ -66,6 +68,8 @@ export const ProfilScreen = () => {
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.title}>Profil</Text>
+
+        <AlarmCard />
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Hunter</Text>
