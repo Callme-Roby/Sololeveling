@@ -4,16 +4,15 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { CAL_STAT_LABEL, type CalStat } from '@/data/calisthenics/catalog';
-import type { CalMission } from '@/data/calisthenics/progression';
-import type { CalStatTotals } from '@/data/calisthenics/progression';
+import { CAL_STATS, CAL_STAT_LABEL, type CalStat } from '@/data/calisthenics/catalog';
+import type { CalMission, CalStatTotals } from '@/data/calisthenics/progression';
 import { missionForDate } from '@/data/rehab/morningMissions';
 import type { RootStackParamList } from '@/navigation/types';
 import { getCalMission } from '@/services/calisthenics';
 import { useAppStore } from '@/store/appStore';
 import { colors } from '@/theme/colors';
 
-const STAT_ORDER: CalStat[] = ['PUSH', 'PULL', 'CORE', 'LEGS'];
+const STAT_ORDER: readonly CalStat[] = CAL_STATS;
 
 export const HomeScreen = () => {
   const user = useAppStore((s) => s.user);

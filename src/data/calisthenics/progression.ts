@@ -1,7 +1,9 @@
 import {
   CALISTHENICS_PATTERNS,
+  CAL_STATS,
   getPattern,
   type CalLevel,
+  type CalStat,
   type MovementPattern,
 } from './catalog';
 
@@ -101,21 +103,27 @@ const buildItem = (
   };
 };
 
+const ARM_CYCLE: MovementPattern[] = ['triceps', 'biceps', 'shoulders', 'grip'];
+const ARM_LABEL = ['Triceps', 'Biceps', 'Epaules', 'Avant-bras'];
+
 /**
- * Split debutant qui alterne. Toujours un echauffement + gainage,
- * puis un focus Poussee (jours pairs) ou Tirage (jours impairs), plus
- * un complement pour equilibrer le corps.
+ * Chaque seance touche DOS + PECS + BRAS + ABDOS (les 4 objectifs).
+ * Le dos et les pecs alternent leur variante jour apres jour, et le
+ * focus bras tourne sur 4 jours (triceps -> biceps -> epaules -> avant-bras)
+ * pour couvrir tout le bras, de l'epaule a l'avant-bras.
  */
 const patternsForDay = (dayIndex: number): MovementPattern[] => {
   const pushDay = dayIndex % 2 === 0;
-  if (pushDay) {
-    return ['warmup', 'push', 'pull_horizontal', 'core', 'legs'];
-  }
-  return ['warmup', 'pull_vertical', 'dip', 'core', 'legs'];
+  const back: MovementPattern = pushDay ? 'pull_vertical' : 'pull_horizontal';
+  const chest: MovementPattern = pushDay ? 'push' : 'dip';
+  const arm = ARM_CYCLE[dayIndex % ARM_CYCLE.length];
+  return ['warmup', back, chest, arm, 'core'];
 };
 
-const focusForDay = (dayIndex: number): string =>
-  dayIndex % 2 === 0 ? 'Poussee + haut du corps' : 'Tirage + gainage';
+const focusForDay = (dayIndex: number): string => {
+  const backChest = dayIndex % 2 === 0 ? 'Dos + Pecs' : 'Dos + Dips';
+  return `${backChest} + ${ARM_LABEL[dayIndex % ARM_LABEL.length]} + Abdos`;
+};
 
 export const buildMission = (state: CalState): CalMission => {
   const patterns = patternsForDay(state.dayIndex);
@@ -167,19 +175,20 @@ export const applyCompletion = (
   };
 };
 
-export interface CalStatTotals {
-  PUSH: number;
-  PULL: number;
-  CORE: number;
-  LEGS: number;
-}
+export type CalStatTotals = Record<CalStat, number>;
 
-/** Niveau cumule par stat (somme des index de niveau des patterns). */
+/** Niveau cumule par stat (somme des index de niveau + progression courante). */
 export const statTotalsFromState = (state: CalState): CalStatTotals => {
-  const totals: CalStatTotals = { PUSH: 0, PULL: 0, CORE: 0, LEGS: 0 };
+  const totals = CAL_STATS.reduce((acc, s) => {
+    acc[s] = 0;
+    return acc;
+  }, {} as CalStatTotals);
   for (const def of CALISTHENICS_PATTERNS) {
     const progress = state.patterns[def.id];
-    totals[def.stat] += progress.level * 10 + (progress.target - def.levels[progress.level].startTarget);
+    if (!progress) continue;
+    const lvl = def.levels[progress.level];
+    if (!lvl) continue;
+    totals[def.stat] += progress.level * 10 + (progress.target - lvl.startTarget);
   }
   return totals;
 };

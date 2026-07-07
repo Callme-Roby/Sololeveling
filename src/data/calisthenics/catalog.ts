@@ -1,21 +1,31 @@
 /**
  * Catalogue calisthenie / street workout, oriente debutant.
- * Chaque pattern de mouvement a une echelle de variantes du plus facile
- * au plus dur ("levels"). On demarre bas et on monte cran par cran.
+ *
+ * Objectifs esthetiques cibles :
+ *  - DOS   : elargir le dos (largeur des dorsaux)
+ *  - PECS  : volume des pectoraux complets (haut, milieu, bas)
+ *  - BRAS  : bras definis + volume, de l'epaule a l'avant-bras
+ *  - ABDOS : ceinture abdominale plus tracee
+ *
+ * Chaque pattern a une echelle de variantes du plus facile au plus dur
+ * ("levels"). On demarre bas et on monte cran par cran.
  */
 
 export type MovementPattern =
-  | 'push'
-  | 'pull_horizontal'
   | 'pull_vertical'
+  | 'pull_horizontal'
+  | 'push'
   | 'dip'
+  | 'shoulders'
+  | 'biceps'
+  | 'triceps'
+  | 'grip'
   | 'core'
-  | 'legs'
   | 'warmup';
 
 export type CalUnit = 'reps' | 'seconds';
 
-export type CalStat = 'PUSH' | 'PULL' | 'CORE' | 'LEGS';
+export type CalStat = 'DOS' | 'PECS' | 'BRAS' | 'ABDOS';
 
 export interface CalLevel {
   exerciseId: string;
@@ -33,67 +43,79 @@ export interface CalPatternDef {
   label: string;
   emoji: string;
   stat: CalStat;
+  goal: string;
   baseXpPerUnit: number;
   levels: readonly CalLevel[];
 }
 
 export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
   {
-    id: 'push',
-    label: 'Poussee',
-    emoji: '\u{1F4AA}',
-    stat: 'PUSH',
-    baseXpPerUnit: 1,
+    id: 'pull_vertical',
+    label: 'Tractions',
+    emoji: '\u{1F9D7}',
+    stat: 'DOS',
+    goal: 'Largeur du dos',
+    baseXpPerUnit: 1.5,
     levels: [
       {
-        exerciseId: 'push_wall',
-        name: 'Pompes au mur',
-        unit: 'reps',
+        exerciseId: 'hang_dead',
+        name: 'Suspension barre (dead hang)',
+        unit: 'seconds',
         sets: 3,
-        startTarget: 8,
-        capTarget: 15,
-        step: 1,
-        instructions: 'Mains au mur, corps droit, flechis les bras lentement.',
+        startTarget: 15,
+        capTarget: 40,
+        step: 3,
+        instructions: 'Bras tendus, epaules engagees. Base de la prise et du dos.',
       },
       {
-        exerciseId: 'push_incline',
-        name: 'Pompes inclinees (banc/rebord)',
-        unit: 'reps',
-        sets: 3,
-        startTarget: 6,
-        capTarget: 12,
-        step: 1,
-        instructions: 'Mains surelevees sur un banc ou muret.',
-      },
-      {
-        exerciseId: 'push_knee',
-        name: 'Pompes sur les genoux',
+        exerciseId: 'pull_scapular',
+        name: 'Tractions scapulaires',
         unit: 'reps',
         sets: 3,
         startTarget: 5,
         capTarget: 12,
         step: 1,
-        instructions: 'Genoux au sol, gainage, descente controlee.',
+        instructions: 'Sans plier les bras, rapproche les omoplates vers le bas.',
       },
       {
-        exerciseId: 'push_full',
-        name: 'Pompes completes',
+        exerciseId: 'pull_negative',
+        name: 'Tractions negatives',
         unit: 'reps',
         sets: 3,
-        startTarget: 5,
-        capTarget: 12,
+        startTarget: 3,
+        capTarget: 6,
         step: 1,
-        instructions: 'Corps gaine de la tete aux talons. Amplitude complete.',
+        instructions: 'Monte avec un saut, descends le plus lentement possible.',
       },
       {
-        exerciseId: 'push_decline',
-        name: 'Pompes declinees (pieds sureleves)',
+        exerciseId: 'pull_band',
+        name: 'Tractions assistees (elastique)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 4,
+        capTarget: 8,
+        step: 1,
+        instructions: 'Elastique sous les pieds/genoux pour alleger.',
+      },
+      {
+        exerciseId: 'pull_full',
+        name: 'Tractions completes',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 3,
+        capTarget: 8,
+        step: 1,
+        instructions: 'Menton au-dessus de la barre, amplitude complete.',
+      },
+      {
+        exerciseId: 'pull_wide',
+        name: 'Tractions prise large',
         unit: 'reps',
         sets: 4,
-        startTarget: 6,
-        capTarget: 12,
+        startTarget: 3,
+        capTarget: 8,
         step: 1,
-        instructions: 'Pieds sur un banc, plus de charge sur les epaules.',
+        instructions: 'Prise plus large que les epaules : cible la largeur du dos.',
       },
     ],
   },
@@ -101,7 +123,8 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
     id: 'pull_horizontal',
     label: 'Tirage horizontal',
     emoji: '\u{1F91A}',
-    stat: 'PULL',
+    stat: 'DOS',
+    goal: 'Epaisseur et largeur du dos',
     baseXpPerUnit: 1.2,
     levels: [
       {
@@ -134,72 +157,94 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
         step: 1,
         instructions: 'Pieds sur un banc, corps quasi horizontal.',
       },
+      {
+        exerciseId: 'row_wide',
+        name: 'Tirage australien prise large',
+        unit: 'reps',
+        sets: 4,
+        startTarget: 5,
+        capTarget: 12,
+        step: 1,
+        instructions: 'Prise large, coudes ouverts : haut du dos et largeur.',
+      },
     ],
   },
   {
-    id: 'pull_vertical',
-    label: 'Traction',
-    emoji: '\u{1F9D7}',
-    stat: 'PULL',
-    baseXpPerUnit: 1.5,
+    id: 'push',
+    label: 'Pompes (pectoraux)',
+    emoji: '\u{1F4AA}',
+    stat: 'PECS',
+    goal: 'Volume des pectoraux',
+    baseXpPerUnit: 1,
     levels: [
       {
-        exerciseId: 'hang_dead',
-        name: 'Suspension barre (dead hang)',
-        unit: 'seconds',
+        exerciseId: 'push_wall',
+        name: 'Pompes au mur',
+        unit: 'reps',
         sets: 3,
-        startTarget: 15,
-        capTarget: 40,
-        step: 3,
-        instructions: 'Bras tendus, epaules engagees. Construit la prise.',
+        startTarget: 8,
+        capTarget: 15,
+        step: 1,
+        instructions: 'Mains au mur, corps droit, flechis les bras lentement.',
       },
       {
-        exerciseId: 'pull_scapular',
-        name: 'Tractions scapulaires',
+        exerciseId: 'push_incline',
+        name: 'Pompes inclinees (bas des pecs)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 6,
+        capTarget: 12,
+        step: 1,
+        instructions: 'Mains surelevees sur un banc ou muret.',
+      },
+      {
+        exerciseId: 'push_knee',
+        name: 'Pompes sur les genoux',
         unit: 'reps',
         sets: 3,
         startTarget: 5,
         capTarget: 12,
         step: 1,
-        instructions: 'Sans plier les bras, rapproche les omoplates.',
+        instructions: 'Genoux au sol, gainage, descente controlee.',
       },
       {
-        exerciseId: 'pull_negative',
-        name: 'Tractions negatives',
+        exerciseId: 'push_full',
+        name: 'Pompes completes',
         unit: 'reps',
         sets: 3,
-        startTarget: 3,
-        capTarget: 6,
+        startTarget: 5,
+        capTarget: 12,
         step: 1,
-        instructions: 'Monte avec un saut, descends le plus lentement possible.',
+        instructions: 'Corps gaine de la tete aux talons. Amplitude complete.',
       },
       {
-        exerciseId: 'pull_band',
-        name: 'Tractions assistees (elastique)',
+        exerciseId: 'push_wide',
+        name: 'Pompes prise large',
         unit: 'reps',
         sets: 3,
-        startTarget: 4,
-        capTarget: 8,
+        startTarget: 6,
+        capTarget: 14,
         step: 1,
-        instructions: 'Elastique sous les pieds/genoux pour alleger.',
+        instructions: 'Mains larges : etire et cible la largeur des pectoraux.',
       },
       {
-        exerciseId: 'pull_full',
-        name: 'Tractions completes',
+        exerciseId: 'push_decline',
+        name: 'Pompes declinees (haut des pecs)',
         unit: 'reps',
-        sets: 3,
-        startTarget: 3,
-        capTarget: 8,
+        sets: 4,
+        startTarget: 6,
+        capTarget: 12,
         step: 1,
-        instructions: 'Menton au-dessus de la barre, amplitude complete.',
+        instructions: 'Pieds sureleves : charge le haut des pectoraux et les epaules.',
       },
     ],
   },
   {
     id: 'dip',
-    label: 'Dips',
+    label: 'Dips (bas des pecs)',
     emoji: '\u{1F53B}',
-    stat: 'PUSH',
+    stat: 'PECS',
+    goal: 'Bas des pectoraux + volume',
     baseXpPerUnit: 1.3,
     levels: [
       {
@@ -220,7 +265,7 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
         startTarget: 3,
         capTarget: 6,
         step: 1,
-        instructions: 'Descente lente sur les barres paralleles.',
+        instructions: 'Descente lente sur les barres paralleles, buste penche.',
       },
       {
         exerciseId: 'dip_bar',
@@ -230,15 +275,186 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
         startTarget: 3,
         capTarget: 10,
         step: 1,
-        instructions: 'Amplitude complete, epaules basses.',
+        instructions: 'Buste legerement penche en avant pour cibler les pecs.',
+      },
+    ],
+  },
+  {
+    id: 'shoulders',
+    label: 'Epaules (pike)',
+    emoji: '\u{1F3D4}\u{FE0F}',
+    stat: 'BRAS',
+    goal: 'Epaules rondes et definies',
+    baseXpPerUnit: 1.2,
+    levels: [
+      {
+        exerciseId: 'pike_knee',
+        name: 'Pompes pike (genoux flechis)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 6,
+        capTarget: 12,
+        step: 1,
+        instructions: 'Bassin haut, tete vers le sol. Debut du travail epaules.',
+      },
+      {
+        exerciseId: 'pike_full',
+        name: 'Pompes pike',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 5,
+        capTarget: 10,
+        step: 1,
+        instructions: 'Jambes tendues, corps en V inverse.',
+      },
+      {
+        exerciseId: 'pike_elevated',
+        name: 'Pompes pike pieds sureleves',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 5,
+        capTarget: 10,
+        step: 1,
+        instructions: 'Pieds sur un banc : presque vertical, gros stimulus epaules.',
+      },
+      {
+        exerciseId: 'handstand_wall',
+        name: 'Gainage ATR au mur',
+        unit: 'seconds',
+        sets: 3,
+        startTarget: 10,
+        capTarget: 40,
+        step: 5,
+        instructions: 'Poirier contre le mur, gainage complet.',
+      },
+    ],
+  },
+  {
+    id: 'biceps',
+    label: 'Biceps',
+    emoji: '\u{1F4AA}',
+    stat: 'BRAS',
+    goal: 'Bras : volume biceps',
+    baseXpPerUnit: 1.3,
+    levels: [
+      {
+        exerciseId: 'curl_band',
+        name: 'Curls elastique',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 10,
+        capTarget: 18,
+        step: 2,
+        instructions: 'Elastique sous les pieds, remonte les mains vers les epaules.',
+      },
+      {
+        exerciseId: 'chin_negative',
+        name: 'Chin-ups negatives (supination)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 3,
+        capTarget: 6,
+        step: 1,
+        instructions: 'Paumes vers toi, descente lente. Fort sur les biceps.',
+      },
+      {
+        exerciseId: 'chin_band',
+        name: 'Chin-ups assistees',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 4,
+        capTarget: 8,
+        step: 1,
+        instructions: 'Prise supination, elastique pour alleger.',
+      },
+      {
+        exerciseId: 'chin_full',
+        name: 'Chin-ups completes',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 3,
+        capTarget: 10,
+        step: 1,
+        instructions: 'Paumes vers toi, menton au-dessus de la barre.',
+      },
+    ],
+  },
+  {
+    id: 'triceps',
+    label: 'Triceps',
+    emoji: '\u{1F91C}',
+    stat: 'BRAS',
+    goal: 'Bras : volume triceps',
+    baseXpPerUnit: 1.2,
+    levels: [
+      {
+        exerciseId: 'tri_bench_dip',
+        name: 'Dips banc (triceps)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 8,
+        capTarget: 14,
+        step: 1,
+        instructions: 'Coudes serres vers l\'arriere, cible les triceps.',
+      },
+      {
+        exerciseId: 'tri_diamond_knee',
+        name: 'Pompes diamant (genoux)',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 6,
+        capTarget: 12,
+        step: 1,
+        instructions: 'Mains en losange sous la poitrine, genoux au sol.',
+      },
+      {
+        exerciseId: 'tri_diamond',
+        name: 'Pompes diamant',
+        unit: 'reps',
+        sets: 3,
+        startTarget: 5,
+        capTarget: 10,
+        step: 1,
+        instructions: 'Mains en losange, coudes le long du corps.',
+      },
+    ],
+  },
+  {
+    id: 'grip',
+    label: 'Avant-bras / grip',
+    emoji: '\u{270A}',
+    stat: 'BRAS',
+    goal: 'Avant-bras et prise',
+    baseXpPerUnit: 0.8,
+    levels: [
+      {
+        exerciseId: 'grip_hang',
+        name: 'Suspension barre (avant-bras)',
+        unit: 'seconds',
+        sets: 3,
+        startTarget: 20,
+        capTarget: 50,
+        step: 5,
+        instructions: 'Tenir la barre le plus longtemps possible, epaules actives.',
+      },
+      {
+        exerciseId: 'grip_towel',
+        name: 'Suspension sur serviette',
+        unit: 'seconds',
+        sets: 3,
+        startTarget: 12,
+        capTarget: 35,
+        step: 3,
+        instructions: 'Une serviette par main : prise et avant-bras a fond.',
       },
     ],
   },
   {
     id: 'core',
-    label: 'Gainage',
+    label: 'Ceinture abdominale',
     emoji: '\u{1F525}',
-    stat: 'CORE',
+    stat: 'ABDOS',
+    goal: 'Abdos traces',
     baseXpPerUnit: 0.8,
     levels: [
       {
@@ -281,44 +497,15 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
         step: 1,
         instructions: 'Suspendu a la barre, monte les genoux vers la poitrine.',
       },
-    ],
-  },
-  {
-    id: 'legs',
-    label: 'Jambes',
-    emoji: '\u{1F9B5}',
-    stat: 'LEGS',
-    baseXpPerUnit: 0.7,
-    levels: [
       {
-        exerciseId: 'legs_squat',
-        name: 'Squats poids du corps',
+        exerciseId: 'core_leg_raise',
+        name: 'Releves de jambes suspendu',
         unit: 'reps',
         sets: 3,
-        startTarget: 10,
-        capTarget: 20,
-        step: 2,
-        instructions: 'Descente cuisses paralleles, talons au sol.',
-      },
-      {
-        exerciseId: 'legs_lunge',
-        name: 'Fentes alternees',
-        unit: 'reps',
-        sets: 3,
-        startTarget: 8,
-        capTarget: 16,
+        startTarget: 4,
+        capTarget: 12,
         step: 1,
-        instructions: 'Genou arriere vers le sol, buste droit.',
-      },
-      {
-        exerciseId: 'legs_calf',
-        name: 'Elevations mollets',
-        unit: 'reps',
-        sets: 3,
-        startTarget: 12,
-        capTarget: 25,
-        step: 2,
-        instructions: 'Monte sur la pointe, controle. Doux pour la cheville.',
+        instructions: 'Jambes tendues montees a l\'horizontale. Bas des abdos.',
       },
     ],
   },
@@ -326,7 +513,8 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
     id: 'warmup',
     label: 'Echauffement',
     emoji: '\u{1F504}',
-    stat: 'CORE',
+    stat: 'ABDOS',
+    goal: 'Preparation',
     baseXpPerUnit: 0.3,
     levels: [
       {
@@ -340,14 +528,14 @@ export const CALISTHENICS_PATTERNS: readonly CalPatternDef[] = [
         instructions: 'Reveille le cardio et les epaules.',
       },
       {
-        exerciseId: 'warmup_band_pullapart',
+        exerciseId: 'warmup_shoulder_prep',
         name: 'Rotations + ouverture epaules',
         unit: 'reps',
         sets: 2,
         startTarget: 12,
         capTarget: 20,
         step: 2,
-        instructions: 'Cercles de bras et ouvertures pour preparer le tirage.',
+        instructions: 'Cercles de bras et ouvertures pour preparer tirage et pecs.',
       },
     ],
   },
@@ -366,9 +554,11 @@ export const CAL_PATTERNS_BY_ID = Object.freeze(
 export const getPattern = (id: MovementPattern): CalPatternDef =>
   CAL_PATTERNS_BY_ID[id];
 
+export const CAL_STATS: readonly CalStat[] = ['DOS', 'PECS', 'BRAS', 'ABDOS'];
+
 export const CAL_STAT_LABEL: Record<CalStat, string> = {
-  PUSH: 'Poussee',
-  PULL: 'Tirage',
-  CORE: 'Gainage',
-  LEGS: 'Jambes',
+  DOS: 'Dos',
+  PECS: 'Pectoraux',
+  BRAS: 'Bras',
+  ABDOS: 'Abdos',
 };
