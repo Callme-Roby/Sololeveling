@@ -5,8 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { CalMission } from '@/data/calisthenics/progression';
 import type { RootStackParamList } from '@/navigation/types';
+import { scheduleSnooze, stopRinging } from '@/services/alarm';
 import { getCalMission } from '@/services/calisthenics';
-import { scheduleSnooze } from '@/services/notifications';
 import { colors } from '@/theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WakeUp'>;
@@ -30,12 +30,19 @@ export const WakeUpScreen = ({ navigation }: Props) => {
     };
   }, []);
 
-  const start = () => {
+  const start = async () => {
+    await stopRinging().catch(() => {});
     navigation.replace('CalisthenicsSession');
   };
 
   const snooze = async () => {
+    await stopRinging().catch(() => {});
     await scheduleSnooze(5).catch(() => {});
+    navigation.goBack();
+  };
+
+  const dismiss = async () => {
+    await stopRinging().catch(() => {});
     navigation.goBack();
   };
 
@@ -77,7 +84,7 @@ export const WakeUpScreen = ({ navigation }: Props) => {
           <Pressable style={styles.snoozeBtn} onPress={snooze}>
             <Text style={styles.snoozeText}>Plus tard (5 min)</Text>
           </Pressable>
-          <Pressable style={styles.dismissBtn} onPress={() => navigation.goBack()}>
+          <Pressable style={styles.dismissBtn} onPress={dismiss}>
             <Text style={styles.dismissText}>Ignorer</Text>
           </Pressable>
         </View>

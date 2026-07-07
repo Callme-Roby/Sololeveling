@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { ensureAlarmChannel } from '@/services/alarm';
 import { runDailyRollover } from '@/services/dailyRollover';
 import { openDatabase, userRepo } from '@/services/db';
 import { setupNotifications } from '@/services/notifications';
@@ -26,6 +27,7 @@ export const BootScreen = () => {
       try {
         await openDatabase();
         await setupNotifications().catch(() => {});
+        await ensureAlarmChannel().catch(() => {});
         const user = await userRepo.getCurrent();
         if (cancelled) return;
         if (user) {

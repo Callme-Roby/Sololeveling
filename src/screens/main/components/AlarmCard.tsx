@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { missionForDate } from '@/data/rehab/morningMissions';
 import {
-  cancelMorningAlarm,
+  cancelAlarm,
   getAlarmConfig,
-  scheduleMorningAlarm,
-  sendTestNotification,
+  openExactAlarmSettings,
+  openFullScreenNotificationSettings,
+  scheduleAlarm,
+  sendAlarmTest,
   type AlarmConfig,
-} from '@/services/notifications';
+} from '@/services/alarm';
 import { colors } from '@/theme/colors';
 
 const clampHour = (h: number) => (h + 24) % 24;
@@ -44,7 +46,7 @@ export const AlarmCard = () => {
     setConfig({ ...config, hour, minute });
     if (config.enabled) {
       setBusy(true);
-      const res = await scheduleMorningAlarm(hour, minute);
+      const res = await scheduleAlarm(hour, minute);
       setConfig(res.config);
       setBusy(false);
     }
@@ -54,16 +56,16 @@ export const AlarmCard = () => {
     setBusy(true);
     try {
       if (value) {
-        const res = await scheduleMorningAlarm(config.hour, config.minute);
+        const res = await scheduleAlarm(config.hour, config.minute);
         if (!res.ok && res.reason === 'permission_denied') {
           Alert.alert(
-            'Notifications refusees',
-            'Autorise les notifications dans les reglages du telephone pour activer la sonnerie.',
+            'Permission refusee',
+            'Autorise les notifications (et l\'alarme exacte) dans les reglages pour activer le reveil.',
           );
         }
         setConfig(res.config);
       } else {
-        const c = await cancelMorningAlarm();
+        const c = await cancelAlarm();
         setConfig(c);
       }
     } finally {
@@ -74,14 +76,17 @@ export const AlarmCard = () => {
   const test = async () => {
     setBusy(true);
     try {
-      const ok = await sendTestNotification();
+      const ok = await sendAlarmTest();
       if (!ok) {
         Alert.alert(
-          'Notifications refusees',
-          'Autorise les notifications pour tester la sonnerie.',
+          'Permission refusee',
+          'Autorise les notifications pour tester le reveil.',
         );
       } else {
-        Alert.alert('Test envoye', 'La sonnerie arrive dans 3 secondes.');
+        Alert.alert(
+          'Test lance',
+          'Le reveil plein ecran arrive dans 3 secondes. Verrouille l\'ecran pour le voir apparaitre comme une vraie alarme.',
+        );
       }
     } finally {
       setBusy(false);
@@ -123,16 +128,29 @@ export const AlarmCard = () => {
       </View>
 
       <PrimaryButton
-        label="Tester la sonnerie"
+        label="Tester le reveil plein ecran"
         variant="secondary"
         onPress={test}
         loading={busy}
         style={styles.testBtn}
       />
+
+      {Platform.OS === 'android' && (
+        <View style={styles.settingsRow}>
+          <Pressable style={styles.settingBtn} onPress={openExactAlarmSettings}>
+            <Text style={styles.settingText}>Alarme exacte</Text>
+          </Pressable>
+          <Pressable style={styles.settingBtn} onPress={openFullScreenNotificationSettings}>
+            <Text style={styles.settingText}>Notifs plein ecran</Text>
+          </Pressable>
+        </View>
+      )}
+
       <Text style={styles.hint}>
-        Sonnerie quotidienne locale. Elle respecte le mode silencieux du
-        telephone. Une vraie alarme plein ecran (Android) peut etre ajoutee
-        en phase 2.
+        Vrai reveil plein ecran (Android) : la sonnerie s'affiche par-dessus
+        l'ecran verrouille et sonne en boucle jusqu'a ce que tu agisses.
+        Sur Android 14+, accorde "Alarme exacte" et "Notifications plein
+        ecran" via les boutons ci-dessus si le reveil ne s'affiche pas.
       </Text>
     </View>
   );
@@ -229,5 +247,16 @@ const styles = StyleSheet.create({
   missionTitle: { color: colors.primary, fontSize: 15, fontWeight: '800' },
   missionDetail: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
   testBtn: { minHeight: 44 },
+  settingsRow: { flexDirection: 'row', gap: 8 },
+  settingBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+  },
+  settingText: { color: colors.textSecondary, fontSize: 12, fontWeight: '700' },
   hint: { color: colors.textMuted, fontSize: 11, lineHeight: 16, fontStyle: 'italic' },
 });
