@@ -157,5 +157,22 @@ export const sendTestNotification = async (): Promise<boolean> => {
   return true;
 };
 
+export const scheduleSnooze = async (minutes = 5): Promise<void> => {
+  await setupNotifications();
+  const granted = await requestNotificationPermission();
+  if (!granted) return;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Le Systeme insiste',
+      body: 'Ta mission du matin t\'attend toujours.',
+      sound: 'default',
+    },
+    trigger: {
+      seconds: Math.max(60, minutes * 60),
+      ...(Platform.OS === 'android' ? { channelId: CHANNEL_ID } : {}),
+    },
+  });
+};
+
 export const formatAlarmTime = (hour: number, minute: number): string =>
   `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;

@@ -38,6 +38,8 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   Run: { exerciseId?: string; workoutId?: string } | undefined;
   DungeonRun: { weekNumber: number };
+  CalisthenicsSession: undefined;
+  WakeUp: undefined;
 };
 
 declare global {

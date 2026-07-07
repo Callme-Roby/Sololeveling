@@ -4,7 +4,7 @@ import { StyleSheet, Text } from 'react-native';
 import type { MainTabParamList } from '@/navigation/types';
 import { colors } from '@/theme/colors';
 
-import { MissionPanelScreen } from './MissionPanelScreen';
+import { HomeScreen } from './HomeScreen';
 import { DonjonsScreen } from './tabs/DonjonsScreen';
 import { InventaireScreen } from './tabs/InventaireScreen';
 import { ProfilScreen } from './tabs/ProfilScreen';
@@ -28,7 +28,7 @@ export const MainTabs = () => (
   >
     <Tabs.Screen
       name="Mission"
-      component={MissionPanelScreen}
+      component={HomeScreen}
       options={{ tabBarIcon: ({ focused }) => labelToIcon(focused, 'M') }}
     />
     <Tabs.Screen
