@@ -129,18 +129,22 @@ jobs:
           path: sololeveling-preview.apk
           retention-days: 14
 
-      - name: Attach APK to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish APK to a rolling preview Release (mobile-downloadable)
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: preview-latest
+          name: Sololeveling preview (dernier build)
+          prerelease: true
+          make_latest: true
           files: sololeveling-preview.apk
-          generate_release_notes: true
-          name: ${{ github.ref_name }} (preview)
           body: |
-            APK release Sololeveling, sideloadable.
+            APK Sololeveling preview, telechargeable directement depuis le
+            telephone (asset de Release, contrairement aux artifacts Actions).
+
+            Commit : ${{ github.sha }}
 
             - SDK Expo 51, React Native 0.74
-            - Build via `./gradlew assembleRelease` sur GitHub Actions (sans EAS)
-            - Signe avec un keystore preview ephemere
-            - Bundle JS embarque (autonome, pas besoin de Metro)
-            - Settings -> Security -> Allow installs from unknown sources
+            - Build via `./gradlew assembleRelease` (sans EAS)
+            - Signe avec un keystore preview ephemere, bundle JS embarque
+            - Reglages -> Securite -> autoriser les sources inconnues
+            - Desinstalle l'ancien APK avant d'installer (signature differente)
