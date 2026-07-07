@@ -53,4 +53,5 @@ export const APP_STATE_KEYS = {
   LESTAGE_MEMORY: 'lestage_memory',
   ALARM_CONFIG: 'alarm_config',
   LAST_MORNING_MISSION_DATE: 'last_morning_mission_date',
+  CALISTHENICS_STATE: 'calisthenics_state',
 } as const;
