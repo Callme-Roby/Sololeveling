@@ -1,5 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +9,9 @@ import type { RootStackParamList } from '@/navigation/types';
 import { scheduleSnooze, stopRinging } from '@/services/alarm';
 import { getCalMission } from '@/services/calisthenics';
 import { colors } from '@/theme/colors';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ALARM_SOUND = require('../../../assets/alarm.wav');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'WakeUp'>;
 
@@ -19,6 +23,7 @@ const now = () => {
 export const WakeUpScreen = ({ navigation }: Props) => {
   const [mission, setMission] = useState<CalMission | null>(null);
   const [time] = useState(now());
+  const soundRef = useRef<Audio.Sound | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,18 +35,71 @@ export const WakeUpScreen = ({ navigation }: Props) => {
     };
   }, []);
 
+  // Joue le son d'alarme en boucle tant que l'ecran de reveil est affiche.
+  // Sur le flux media : audible meme si le telephone est en silencieux.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        // L'ecran est affiche : on coupe la sonnerie systeme (Notifee) et
+        // c'est expo-av qui prend le relais (audible meme en silencieux).
+        await stopRinging().catch(() => {});
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: false,
+          interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+          interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+        });
+        const { sound } = await Audio.Sound.createAsync(ALARM_SOUND, {
+          isLooping: true,
+          volume: 1.0,
+          shouldPlay: true,
+        });
+        if (!active) {
+          await sound.unloadAsync().catch(() => {});
+          return;
+        }
+        soundRef.current = sound;
+      } catch {
+        // pas de son dispo : l'ecran reste utilisable
+      }
+    })();
+    return () => {
+      active = false;
+      const s = soundRef.current;
+      soundRef.current = null;
+      if (s) {
+        s.stopAsync().catch(() => {});
+        s.unloadAsync().catch(() => {});
+      }
+    };
+  }, []);
+
+  const stopSound = async () => {
+    const s = soundRef.current;
+    soundRef.current = null;
+    if (s) {
+      await s.stopAsync().catch(() => {});
+      await s.unloadAsync().catch(() => {});
+    }
+  };
+
   const start = async () => {
+    await stopSound();
     await stopRinging().catch(() => {});
     navigation.replace('CalisthenicsSession');
   };
 
   const snooze = async () => {
+    await stopSound();
     await stopRinging().catch(() => {});
     await scheduleSnooze(5).catch(() => {});
     navigation.goBack();
   };
 
   const dismiss = async () => {
+    await stopSound();
     await stopRinging().catch(() => {});
     navigation.goBack();
   };

@@ -1,8 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { missionForDate } from '@/data/rehab/morningMissions';
+import type { RootStackParamList } from '@/navigation/types';
 import {
   cancelAlarm,
   getAlarmConfig,
@@ -18,6 +21,7 @@ const clampHour = (h: number) => (h + 24) % 24;
 const clampMinute = (m: number) => (m + 60) % 60;
 
 export const AlarmCard = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [config, setConfig] = useState<AlarmConfig | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -61,6 +65,16 @@ export const AlarmCard = () => {
           Alert.alert(
             'Permission refusee',
             'Autorise les notifications (et l\'alarme exacte) dans les reglages pour activer le reveil.',
+          );
+        } else if (res.ok && Platform.OS === 'android') {
+          Alert.alert(
+            'Reveil active',
+            'Pour qu\'il s\'affiche par-dessus l\'ecran verrouille (Android 12+), active "Alarme exacte" et "Notifications plein ecran". Ouvrir les reglages maintenant ?',
+            [
+              { text: 'Plus tard', style: 'cancel' },
+              { text: 'Alarme exacte', onPress: openExactAlarmSettings },
+              { text: 'Plein ecran', onPress: openFullScreenNotificationSettings },
+            ],
           );
         }
         setConfig(res.config);
@@ -128,7 +142,12 @@ export const AlarmCard = () => {
       </View>
 
       <PrimaryButton
-        label="Tester le reveil plein ecran"
+        label="Apercu du reveil (ecran + son)"
+        onPress={() => navigation.navigate('WakeUp')}
+        style={styles.testBtn}
+      />
+      <PrimaryButton
+        label="Tester la sonnerie systeme"
         variant="secondary"
         onPress={test}
         loading={busy}
@@ -147,10 +166,13 @@ export const AlarmCard = () => {
       )}
 
       <Text style={styles.hint}>
-        Vrai reveil plein ecran (Android) : la sonnerie s'affiche par-dessus
-        l'ecran verrouille et sonne en boucle jusqu'a ce que tu agisses.
-        Sur Android 14+, accorde "Alarme exacte" et "Notifications plein
-        ecran" via les boutons ci-dessus si le reveil ne s'affiche pas.
+        Le reveil s'affiche par-dessus l'ecran verrouille et sonne en boucle.
+        {'\n\n'}IMPORTANT sur Android 12+ : appuie sur les 2 boutons ci-dessus
+        et active "Alarme exacte" + "Notifications plein ecran", sinon le
+        reveil ne s'affichera pas verrouille.
+        {'\n\n'}Le plein ecran ne se declenche QUE quand l'ecran est
+        verrouille/eteint. Pour verifier tout de suite l'ecran et le son,
+        utilise "Apercu du reveil".
       </Text>
     </View>
   );
