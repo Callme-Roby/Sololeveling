@@ -12,19 +12,18 @@ export const WelcomeScreen = ({ navigation }: Props) => (
   <SafeAreaView style={styles.safe}>
     <View style={styles.body}>
       <View style={styles.heroBlock}>
-        <Text style={styles.eyebrow}>Le Systeme</Text>
-        <Text style={styles.title}>Sololeveling</Text>
+        <Text style={styles.eyebrow}>Ton coach</Text>
+        <Text style={styles.title}>Programme sur-mesure</Text>
         <Text style={styles.subtitle}>
-          12 semaines. 4 stats. Rang E vers Rang B.
+          Renforcement, cheville, rappels et suivi.
         </Text>
       </View>
       <Text style={styles.lore}>
-        "Le rang n'est pas donne. Il se forge, jour apres jour."
+        "La regularite bat l'intensite. Un peu, chaque jour."
       </Text>
       <Text style={styles.body1}>
-        Tu vas configurer ton profil, definir ton domicile, puis traverser
-        le Donjon Zero pour mesurer ton point de depart. Le programme
-        commence apres.
+        Configure ton profil, active un rappel le matin si tu veux, puis
+        lance ta premiere seance. Tout progresse a ton rythme.
       </Text>
     </View>
     <View style={styles.footer}>

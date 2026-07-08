@@ -1,0 +1,126 @@
+name: Build Forge Training (classic) APK
+
+on:
+  push:
+    branches:
+      - 'claude/classic-fitness-app'
+    paths:
+      - '.github/workflows/build-classic.yml'
+      - 'app.json'
+      - 'package.json'
+      - 'babel.config.js'
+      - 'tsconfig.json'
+      - 'src/**'
+      - 'plugins/**'
+      - 'App.tsx'
+      - 'index.ts'
+      - 'CLASSIC_BUILD_TRIGGER'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Gradle assembleRelease (classic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate placeholder assets
+        run: |
+          mkdir -p assets
+          python3 - <<'PY'
+          import struct, zlib
+
+          def make_png(w, h, hex_color, path):
+              r = int(hex_color[1:3], 16)
+              g = int(hex_color[3:5], 16)
+              b = int(hex_color[5:7], 16)
+              sig = b'\x89PNG\r\n\x1a\n'
+              ihdr_data = struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)
+              ihdr_chunk = b'IHDR' + ihdr_data
+              ihdr = struct.pack('>I', len(ihdr_data)) + ihdr_chunk + struct.pack('>I', zlib.crc32(ihdr_chunk))
+              row = b'\x00' + bytes([r, g, b]) * w
+              raw = row * h
+              compressed = zlib.compress(raw)
+              idat_chunk = b'IDAT' + compressed
+              idat = struct.pack('>I', len(compressed)) + idat_chunk + struct.pack('>I', zlib.crc32(idat_chunk))
+              iend_chunk = b'IEND'
+              iend = struct.pack('>I', 0) + iend_chunk + struct.pack('>I', zlib.crc32(iend_chunk))
+              with open(path, 'wb') as f:
+                  f.write(sig + ihdr + idat + iend)
+
+          color = '#0b0f17'
+          make_png(1024, 1024, color, 'assets/icon.png')
+          make_png(1024, 1024, color, 'assets/adaptive-icon.png')
+          make_png(1284, 2778, color, 'assets/splash.png')
+          make_png(64, 64, color, 'assets/favicon.png')
+          PY
+          ls -la assets/
+
+      - name: Expo prebuild (android only)
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Generate preview keystore
+        run: |
+          keytool -genkeypair -v \
+            -keystore preview.keystore \
+            -alias preview \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass preview -keypass preview \
+            -dname "CN=Forge Training, OU=Preview, O=Forge, L=Earth, S=Earth, C=FR"
+
+      - name: Gradle assembleRelease (signed)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/preview.keystore" \
+            -Pandroid.injected.signing.store.password=preview \
+            -Pandroid.injected.signing.key.alias=preview \
+            -Pandroid.injected.signing.key.password=preview
+
+      - name: Locate APK
+        run: |
+          APK=$(find android/app/build/outputs/apk -name '*.apk' | head -n 1)
+          echo "Found: $APK"
+          cp "$APK" forge-classic.apk
+          ls -lh forge-classic.apk
+
+      - name: Publish APK to classic-latest Release (mobile-downloadable)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: classic-latest
+          name: Forge Training (version classique)
+          prerelease: true
+          make_latest: false
+          files: forge-classic.apk
+          body: |
+            Forge Training - version sport classique (sans Solo Leveling).
+            Programmes renforcement + cheville, rappels alarme, suivi.
+
+            Commit : ${{ github.sha }}
+
+            - Reglages -> Securite -> autoriser les sources inconnues
+            - App distincte (package com.callmeroby.forgetraining) : elle
+              s'installe a cote de la version Solo Leveling.

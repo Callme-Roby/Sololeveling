@@ -123,11 +123,11 @@ export const scheduleAlarm = async (
   await notifee.createTriggerNotification(
     {
       id: ALARM_ID,
-      title: 'Le Systeme t\'appelle',
-      body: 'Ta mission du matin t\'attend. Leve-toi, Hunter.',
+      title: 'C\'est l\'heure de bouger',
+      body: 'Ta seance du matin t\'attend.',
       android: alarmAndroidPayload(
-        'Le Systeme t\'appelle',
-        'Ta mission du matin t\'attend.',
+        'C\'est l\'heure de bouger',
+        'Ta seance du matin t\'attend.',
         true,
       ),
     },
@@ -170,9 +170,9 @@ export const scheduleSnooze = async (minutes = 5): Promise<void> => {
   await notifee.createTriggerNotification(
     {
       id: SNOOZE_ID,
-      title: 'Le Systeme insiste',
-      body: 'Ta mission du matin t\'attend toujours.',
-      android: alarmAndroidPayload('Le Systeme insiste', 'Encore une fois.', true),
+      title: 'Petit rappel',
+      body: 'Ta seance du matin t\'attend toujours.',
+      android: alarmAndroidPayload('Petit rappel', 'Encore une fois.', true),
     },
     trigger,
   );

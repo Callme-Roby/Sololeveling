@@ -52,21 +52,19 @@ export const ReadyScreen = ({ route }: Props) => {
           <Text style={styles.title}>Recapitulatif</Text>
         </View>
         <View style={styles.card}>
-          <Row label="Hunter" value={name} />
+          <Row label="Nom" value={name} />
           <Row label="Poids" value={`${bodyWeightKg} kg`} />
-          <Row label="Domicile" value={`${homeLat.toFixed(4)}, ${homeLng.toFixed(4)}`} />
-          <Row label="Rayon" value={`${homeRadiusKm} km`} />
-          <Row label="Rang initial" value="E" />
+          <Row label="Position" value={`${homeLat.toFixed(4)}, ${homeLng.toFixed(4)}`} />
         </View>
         <Text style={styles.note}>
-          Le Donjon Zero arrive ensuite : 11 baselines a mesurer (~75 min, scindable
-          sur 2 jours). Aucune semaine ne s'ouvre tant qu'il n'est pas termine.
+          C'est parti. Tu accedes a tes programmes (renforcement + cheville),
+          tes rappels et ton suivi. Tu peux tout ajuster ensuite.
         </Text>
         {error && <Text style={styles.error}>{error}</Text>}
       </ScrollView>
       <View style={styles.footer}>
         <PrimaryButton
-          label="Acceder au Donjon Zero"
+          label="Acceder a l'application"
           onPress={create}
           loading={submitting}
         />

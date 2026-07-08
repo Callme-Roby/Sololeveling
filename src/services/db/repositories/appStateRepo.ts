@@ -54,4 +54,5 @@ export const APP_STATE_KEYS = {
   ALARM_CONFIG: 'alarm_config',
   LAST_MORNING_MISSION_DATE: 'last_morning_mission_date',
   CALISTHENICS_STATE: 'calisthenics_state',
+  ANKLE_PAIN_LOG: 'ankle_pain_log',
 } as const;

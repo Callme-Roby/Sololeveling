@@ -39,6 +39,7 @@ export type RootStackParamList = {
   Run: { exerciseId?: string; workoutId?: string } | undefined;
   DungeonRun: { weekNumber: number };
   CalisthenicsSession: undefined;
+  AnkleSession: undefined;
   WakeUp: undefined;
 };
 

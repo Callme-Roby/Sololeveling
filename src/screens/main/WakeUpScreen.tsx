@@ -55,7 +55,7 @@ export const WakeUpScreen = ({ navigation }: Props) => {
         </View>
 
         <Text style={styles.time}>{time}</Text>
-        <Text style={styles.wake}>Le Systeme t'appelle</Text>
+        <Text style={styles.wake}>C'est l'heure de bouger</Text>
 
         <View style={styles.missionCard}>
           <Text style={styles.missionEyebrow}>Mission du matin</Text>

@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "Sololeveling",
+    "name": "Forge Training",
     "slug": "sololeveling",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "sololeveling",
+    "scheme": "forgetraining",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,7 +15,7 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.callmeroby.sololeveling",
+      "bundleIdentifier": "com.callmeroby.forgetraining",
       "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -32,7 +32,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0b0f17"
       },
-      "package": "com.callmeroby.sololeveling",
+      "package": "com.callmeroby.forgetraining",
       "versionCode": 1,
       "permissions": [
         "INTERNET",
